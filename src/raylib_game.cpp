@@ -2,8 +2,8 @@
 *
 *   raylib game template
 *
-*   <Game title>
-*   <Game description>
+*   <unexpected party>
+*   <party game with random rules each round>
 *
 *   This game has been created using raylib (www.raylib.com)
 *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
@@ -13,7 +13,81 @@
 ********************************************************************************************/
 
 #include "raylib.h"
-#include "screens.h"    // NOTE: Declares global (extern) variables and screens functions
+#include "config.hpp"
+#include "states/state_manager.hpp"
+
+#if defined(PLATFORM_WEB)
+    #include <emscripten/emscripten.h>
+#endif
+
+void UpdateDrawFrame(Camera2D& cam);
+
+int main(void)
+{
+    // Initialization
+    //---------------------------------------------------------
+    InitWindow(1000, 1000, "Unexpected Party");
+
+    InitAudioDevice();      // Initialize audio device
+
+    Camera2D cam = {{0,0}, {0,0}, 0, GetScreenHeight() / 256.f};
+
+    // Load global data (assets that must be available in all screens, i.e. font)
+    //font = LoadFont("resources/mecha.png");
+    //music = LoadMusicStream("resources/ambient.ogg");
+    //fxCoin = LoadSound("resources/coin.wav");
+
+    //SetMusicVolume(music, 1.0f);
+    //PlayMusicStream(music);
+
+    // Setup and init first screen
+    //currentScreen = LOGO;
+    //InitLogoScreen();
+
+#if defined(PLATFORM_WEB)
+    emscripten_set_main_loop(UpdateDrawFrame(cam), 60, 1);
+#else
+    SetTargetFPS(TARGET_FPS);       // Set our game to run at 60 frames-per-second
+    //--------------------------------------------------------------------------------------
+
+    // Main game loop
+    while (!WindowShouldClose())    // Detect window close button or ESC key
+    {
+        UpdateDrawFrame(cam);
+    }
+#endif
+
+    // De-Initialization
+    //--------------------------------------------------------------------------------------
+
+
+    // Unload global data loaded
+    //UnloadFont(font);
+    //UnloadMusicStream(music);
+    //UnloadSound(fxCoin);
+
+    CloseAudioDevice();     // Close audio context
+
+    CloseWindow();          // Close window and OpenGL context
+    //--------------------------------------------------------------------------------------
+
+    return 0;
+}
+
+void UpdateDrawFrame(Camera2D& cam) {
+    StateManager::Get().update();
+
+
+    BeginDrawing();
+    BeginMode2D(cam);
+        ClearBackground(RAYWHITE);
+
+        StateManager::Get().render();
+    EndMode2D();
+    EndDrawing();
+}
+
+/*#include "screens.h"    // NOTE: Declares global (extern) variables and screens functions
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -31,8 +105,8 @@ Sound fxCoin = { 0 };
 //----------------------------------------------------------------------------------
 // Local Variables Definition (local to this module)
 //----------------------------------------------------------------------------------
-static const int screenWidth = 800;
-static const int screenHeight = 450;
+static const int screenWidth = 256;
+static const int screenHeight = 256;
 
 // Required variables to manage screen transitions (fade-in, fade-out)
 static float transAlpha = 0.0f;
@@ -291,3 +365,4 @@ static void UpdateDrawFrame(void)
     EndDrawing();
     //----------------------------------------------------------------------------------
 }
+*/
