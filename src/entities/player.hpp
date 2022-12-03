@@ -21,6 +21,7 @@ private:
     bool isWalking;
     bool doneLanding;
     float spriteTimer;
+    bool bothPressed;
 
     void walkCycle() {
         spriteTimer += std::abs(direction) * GetFrameTime();
@@ -67,17 +68,30 @@ private:
     }
 public:
     Player(Vector2 pos, Vector2 size, Color color, float dir) : GameObject(pos, size), color{color}, vel{0, START_GRAVITY}, currentSpriteIndex{0,16},
-        direction{0}, currentDirection{dir}, speed{0}, acceleration{PLAYER_ACCELERATION}, isJump{false}, isGrounded{false}, isWalking{false}, doneLanding{true}, spriteTimer{0} {};
+        direction{0}, currentDirection{dir}, speed{0}, acceleration{PLAYER_ACCELERATION}, isJump{false}, isGrounded{false}, isWalking{false}, doneLanding{true}, spriteTimer{0}, bothPressed{false} {};
     ~Player() = default;
 
     virtual void input() {
+        float newDir {direction};
+        float oldDir {direction};
+        direction = 0;
         if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
-            direction = -1;
-        }
-        else if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
-            direction = 1;
-        }
-        else direction = 0;
+            direction += -1;
+            if (oldDir + direction == 0 && !bothPressed) {
+                bothPressed = true;
+                newDir = -1;
+            }
+        } else bothPressed = false;
+        if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
+            direction += 1;
+            if (oldDir + direction == 0 && !bothPressed) {
+                bothPressed = true;
+                newDir = 1;
+            }
+        } else bothPressed = false;
+
+        if (bothPressed) direction += newDir;
+        //else direction = 0;
 
         if (direction != 0) currentDirection = direction;
 
@@ -172,7 +186,8 @@ public:
     }
 
     virtual void draw(const Vector2 offset) const override {
-        DrawTextureRec(_player1_tilemap, {currentSpriteIndex.x ,currentSpriteIndex.y, 16 * currentDirection,16}, {std::round(rect.x - 2), std::round(rect.y)}, WHITE);
+        int facingDir = (currentDirection > 0) ? 1 : -1;
+        DrawTextureRec(_player1_tilemap, {currentSpriteIndex.x ,currentSpriteIndex.y, 16.f * facingDir,16}, {std::round(rect.x - 2), std::round(rect.y)}, WHITE);
     }
 };
 
