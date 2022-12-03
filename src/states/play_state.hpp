@@ -5,13 +5,15 @@
 #include "state.hpp"
 #include "../entities/player.hpp"
 #include "../entities/block.hpp"
+#include "../texture_loader.hpp"
+#include "../resources/levels/level1_data.hpp"
 
 class PlayState : public State {
 private:
     Player player;
     std::vector<Block> walls;
 public:
-    PlayState(Vector2 pos) : State(pos), player{{100,100}, {8,12}, RED}, walls{{{180, 100}, {50, 30}, RED}, {{0, 256 - 30}, {256, 30}, RED}, {{256 - 30,0}, {30, 256}, RED}} {};
+    PlayState(Vector2 pos) : State(pos), player{{100,100}, {12,16}, RED, 1}, walls{level1_walls} {};
     ~PlayState() = default;
 
     virtual void update() override {
@@ -31,6 +33,7 @@ public:
     }
 
     virtual void render() const override {
+        DrawTexture(_level1, 0,0, WHITE);
         for (auto& wall : walls) {
             wall.draw(position);
         }

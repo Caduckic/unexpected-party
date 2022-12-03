@@ -12,8 +12,10 @@
 *
 ********************************************************************************************/
 
+#include <iostream>
 #include "raylib.h"
 #include "config.hpp"
+#include "texture_loader.hpp"
 #include "states/state_manager.hpp"
 
 #if defined(PLATFORM_WEB)
@@ -27,6 +29,8 @@ int main(void)
     // Initialization
     //---------------------------------------------------------
     InitWindow(1000, 1000, "Unexpected Party");
+
+    LoadAllTextures();
 
     InitAudioDevice();      // Initialize audio device
 
@@ -65,6 +69,8 @@ int main(void)
     //UnloadFont(font);
     //UnloadMusicStream(music);
     //UnloadSound(fxCoin);
+    std::cout << "rekt";
+    UnloadAllTextures();
 
     CloseAudioDevice();     // Close audio context
 

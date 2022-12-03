@@ -1,0 +1,10 @@
+Rules
+1. Coins are enemies
+2. Gravity is reverse
+3. Coin is mario shell
+4. PvP can't stomp
+5. Collect most Coins
+6. Instant death
+7. Level is dark
+8. Players are invisible
+9. Death is win

@@ -15,7 +15,7 @@ public:
     }
 
     virtual void draw(Vector2 offset) const override {
-        DrawRectangle(rect.x + offset.x, rect.y + offset.y, rect.width, rect.height, color);
+        
     }
 };
 
