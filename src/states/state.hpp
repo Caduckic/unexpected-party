@@ -11,6 +11,10 @@ public:
     State(Vector2 pos) : position{pos} {};
     ~State() = default;
 
+    void setPosition(const Vector2 pos) {
+        position = pos;
+    }
+
     virtual void init() {};
     virtual void update() = 0;
     virtual void render() const = 0;

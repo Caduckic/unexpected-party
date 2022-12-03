@@ -54,6 +54,17 @@ private:
         currentSpriteIndex = {16,16};
         if (spriteTimer > 0.2f) doneLanding = true;
     }
+
+    void deathAnimation() {
+        spriteTimer += GetFrameTime();
+        if (spriteTimer > -1.8 && spriteTimer < 0) {
+            spriteTimer = -2;
+            currentSpriteIndex.x = currentSpriteIndex.x == 32 ? 48 : 32;
+        }
+        else if (spriteTimer > 0 && spriteTimer < 0.4) currentSpriteIndex = {48, 16};
+        else if (spriteTimer > 0.4 && spriteTimer < 1) currentSpriteIndex = {32, 32};
+        else if (spriteTimer > 1) spriteTimer = -2;
+    }
 public:
     Player(Vector2 pos, Vector2 size, Color color, float dir) : GameObject(pos, size), color{color}, vel{0, START_GRAVITY}, currentSpriteIndex{0,16},
         direction{0}, currentDirection{dir}, speed{0}, acceleration{PLAYER_ACCELERATION}, isJump{false}, isGrounded{false}, isWalking{false}, doneLanding{true}, spriteTimer{0} {};
@@ -120,6 +131,7 @@ public:
         else if (!doneLanding) landFrame();
         else if (isWalking) walkCycle();
         else if (!isWalking) idleCycle();
+        //deathAnimation();
 
         isWalking = false;
     }
@@ -140,7 +152,7 @@ public:
                     if (!isGrounded && oldVel > 250) {
                         spriteTimer = 0;
                         doneLanding = false;
-                        speed = speed / 5;
+                        speed = 0;
                     }
                     isGrounded = true;
                 }

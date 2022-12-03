@@ -28,7 +28,7 @@ int main(void)
 {
     // Initialization
     //---------------------------------------------------------
-    InitWindow(1000, 1000, "Unexpected Party");
+    InitWindow(1028, 1028, "Unexpected Party");
 
     LoadAllTextures();
 

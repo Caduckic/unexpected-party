@@ -5,9 +5,8 @@
 
 class Block : public GameObject {
 private:
-    Color color;
 public:
-    Block(Vector2 pos, Vector2 size, Color col) : GameObject(pos, size), color{col} {};
+    Block(Vector2 pos, Vector2 size) : GameObject(pos, size) {};
     ~Block() = default;
 
     virtual void update() override {
