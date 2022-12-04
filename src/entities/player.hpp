@@ -138,7 +138,7 @@ public:
         }
 
         rect.x += vel.x * GetFrameTime();
-        rect.y += vel.y * GetFrameTime();
+        rect.y += vel.y * GetFrameTime() < 16 ? vel.y * GetFrameTime() : 15;
 
         if (vel.y < 0) jumpFrame();
         else if (!isGrounded) fallFrame();

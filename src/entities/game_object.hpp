@@ -20,6 +20,11 @@ public:
         return rect;
     }
 
+    void SetPosition(const Vector2 pos, const Vector2 offset) {
+        rect.x = pos.x + offset.x;
+        rect.y = pos.y + offset.y;
+    }
+
     virtual void update() = 0;
     virtual void draw(Vector2 offset) const = 0;
 };

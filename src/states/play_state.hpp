@@ -7,7 +7,7 @@
 #include "../entities/block.hpp"
 #include "../entities/coin.hpp"
 #include "../texture_loader.hpp"
-#include "../resources/levels/level1_data.hpp"
+#include "../resources/levels/level_data.hpp"
 
 class PlayState : public State {
 private:
@@ -15,8 +15,40 @@ private:
     std::vector<Block> walls;
     std::vector<Coin> coins;
 public:
-    PlayState(Vector2 pos) : State(pos), player{{100,100}, {12,16}, RED, 1}, walls{level1_walls}, coins{level1_coins} {};
+    PlayState(Vector2 pos) : State(pos), player{{100,100}, {12,16}, RED, 1}, walls{_level1_data.walls}, coins{_level1_data.coins} {};
     ~PlayState() = default;
+
+    void UnloadLevel() {
+        walls.clear();
+        coins.clear();
+    }
+
+    void LoadLevel(int level) {
+        UnloadLevel();
+        switch (level)
+        {
+        case 1:
+            walls = _level1_data.walls;
+            coins = _level1_data.coins;
+            break;
+        case 2:
+            walls = _level2_data.walls;
+            coins = _level2_data.coins;
+            break;
+        /*case 3:
+            walls = _level3_data.walls;
+            coins = _level3_data.coins;
+            break;
+        case 4:
+            walls = _level4_data.walls;
+            coins = _level4_data.coins;
+            break;*/
+        default:
+            walls = _level1_data.walls;
+            coins = _level1_data.coins;
+            break;
+        }
+    }
 
     virtual void update() override {
         player.input();
