@@ -79,48 +79,52 @@ public:
         stateTransitioning = true;
     }
 
+    void TransitionState() {
+        Vector2 nextStatePos = nextState->getPosition();
+
+        if (nextStatePos.x != 0) {
+            if (nextStatePos.x > 1) {
+                nextState->setPosition({nextStatePos.x - 180 * GetFrameTime(), 0});
+                currentState->setPosition({(nextStatePos.x - 180 * GetFrameTime()) - 256, 0});
+            }
+            else if (nextStatePos.x < -1) {
+                nextState->setPosition({nextStatePos.x + 180 * GetFrameTime(), 0});
+                currentState->setPosition({(nextStatePos.x + 180 * GetFrameTime()) + 256, 0});
+            }
+
+            if (nextStatePos.x < 1 && nextStatePos.x > -1) {
+                currentState.swap(nextState);
+                nextState.reset();
+                currentState->setPosition({0,0});
+                stateTransitioning = false;
+            }
+        }
+        else if (nextStatePos.y != 0) {
+            if (nextStatePos.y > 1) {
+                nextState->setPosition({ 0, nextStatePos.y - 180 * GetFrameTime()});
+                currentState->setPosition({ 0, ( nextStatePos.y - 180 * GetFrameTime()) - 256});
+            }
+            else if (nextStatePos.y < -1) {
+                nextState->setPosition({ 0, nextStatePos.y + 180 * GetFrameTime()});
+                currentState->setPosition({ 0, (nextStatePos.y + 180 * GetFrameTime()) + 256});
+            }
+
+            if (nextStatePos.y < 1 && nextStatePos.y > -1) {
+                currentState.swap(nextState);
+                //currentState = std::move(nextState);
+                nextState.reset();
+                currentState->setPosition({0,0});
+                stateTransitioning = false;
+            }
+        }
+    }
+
     void update() {
         if (IsKeyPressed(KEY_L)) LoadNextState(PLAY);
         if (!stateTransitioning)
             currentState->update();
         else {
-            Vector2 nextStatePos = nextState->getPosition();
-
-            if (nextStatePos.x != 0) {
-                if (nextStatePos.x > 1) {
-                    nextState->setPosition({nextStatePos.x - 180 * GetFrameTime(), 0});
-                    currentState->setPosition({(nextStatePos.x - 180 * GetFrameTime()) - 256, 0});
-                }
-                else if (nextStatePos.x < -1) {
-                    nextState->setPosition({nextStatePos.x + 180 * GetFrameTime(), 0});
-                    currentState->setPosition({(nextStatePos.x + 180 * GetFrameTime()) + 256, 0});
-                }
-
-                if (nextStatePos.x < 1 && nextStatePos.x > -1) {
-                    currentState.swap(nextState);
-                    nextState.reset();
-                    currentState->setPosition({0,0});
-                    stateTransitioning = false;
-                }
-            }
-            else if (nextStatePos.y != 0) {
-                if (nextStatePos.y > 1) {
-                    nextState->setPosition({ 0, nextStatePos.y - 180 * GetFrameTime()});
-                    currentState->setPosition({ 0, ( nextStatePos.y - 180 * GetFrameTime()) - 256});
-                }
-                else if (nextStatePos.y < -1) {
-                    nextState->setPosition({ 0, nextStatePos.y + 180 * GetFrameTime()});
-                    currentState->setPosition({ 0, (nextStatePos.y + 180 * GetFrameTime()) + 256});
-                }
-
-                if (nextStatePos.y < 1 && nextStatePos.y > -1) {
-                    currentState.swap(nextState);
-                    //currentState = std::move(nextState);
-                    nextState.reset();
-                    currentState->setPosition({0,0});
-                    stateTransitioning = false;
-                }
-            }
+            TransitionState();
         }
     }
 

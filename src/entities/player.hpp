@@ -14,6 +14,7 @@ private:
     Vector2 currentSpriteIndex;
     float direction;
     float currentDirection;
+    int playerNum;
     float speed;
     float acceleration;
     bool isJump;
@@ -68,21 +69,42 @@ private:
     }
 public:
     Player(Vector2 pos, Vector2 size, Color color, float dir) : GameObject(pos, size), color{color}, vel{0, START_GRAVITY}, currentSpriteIndex{0,16},
-        direction{0}, currentDirection{dir}, speed{0}, acceleration{PLAYER_ACCELERATION}, isJump{false}, isGrounded{false}, isWalking{false}, doneLanding{true}, spriteTimer{0}, bothPressed{false} {};
+        direction{0}, currentDirection{dir}, playerNum{dir > 0 ? 1 : 2}, speed{0}, acceleration{PLAYER_ACCELERATION}, isJump{false}, isGrounded{false}, isWalking{false}, doneLanding{true}, spriteTimer{0}, bothPressed{false} {};
     ~Player() = default;
 
     virtual void input() {
         float newDir {direction};
         float oldDir {direction};
+
+        KeyboardKey UP, LEFT, RIGHT;
+
+        switch (playerNum)
+        {
+        case 1:
+            UP = KEY_W;
+            LEFT = KEY_A;
+            RIGHT = KEY_D;
+            break;
+        case 2:
+            UP = KEY_UP;
+            LEFT = KEY_LEFT;
+            RIGHT = KEY_RIGHT;
+        default:
+            UP = KEY_UP;
+            LEFT = KEY_LEFT;
+            RIGHT = KEY_RIGHT;
+            break;
+        }
+
         direction = 0;
-        if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
+        if (IsKeyDown(LEFT)) {
             direction += -1;
             if (oldDir + direction == 0 && !bothPressed) {
                 bothPressed = true;
                 newDir = -1;
             }
         } else bothPressed = false;
-        if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
+        if (IsKeyDown(RIGHT)) {
             direction += 1;
             if (oldDir + direction == 0 && !bothPressed) {
                 bothPressed = true;
@@ -95,7 +117,7 @@ public:
 
         if (direction != 0) currentDirection = direction;
 
-        if (IsKeyPressed(KEY_SPACE) && isGrounded) {
+        if (IsKeyPressed(UP) && isGrounded) {
             isJump = true;
             doneLanding = true;
         }
@@ -188,7 +210,7 @@ public:
 
     virtual void draw(const Vector2 offset) const override {
         int facingDir = (currentDirection > 0) ? 1 : -1;
-        DrawTextureRec(_player1_tilemap, {currentSpriteIndex.x, currentSpriteIndex.y, 16.f * facingDir,16}, {std::round(rect.x - 2 + offset.x), std::round(rect.y + offset.y)}, WHITE);
+        DrawTextureRec(playerNum == 1 ? _player1_tilemap : _player2_tilemap, {currentSpriteIndex.x, currentSpriteIndex.y, 16.f * facingDir,16}, {std::round(rect.x - 2 + offset.x), std::round(rect.y + offset.y)}, WHITE);
     }
 };
 

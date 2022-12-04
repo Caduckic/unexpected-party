@@ -2,6 +2,7 @@
 #define _PLAY_STATE_HPP_
 
 #include <vector>
+#include <memory>
 #include "state.hpp"
 #include "../entities/player.hpp"
 #include "../entities/block.hpp"
@@ -11,12 +12,14 @@
 
 class PlayState : public State {
 private:
-    Player player;
+    std::shared_ptr<Player> player1;
+    std::shared_ptr<Player> player2;
     LevelType level;
     std::vector<Block> walls;
     std::vector<Coin> coins;
 public:
-    PlayState(Vector2 pos, LevelType level) : State(pos), player{{100,100}, {12,16}, RED, 1}, level{level}, walls{}, coins{} {
+    PlayState(Vector2 pos, LevelType level) : State(pos), player1{std::make_shared<Player>(Vector2{100,100}, Vector2{12,16}, RED, 1)},
+        player2{std::make_shared<Player>(Vector2{16,16}, Vector2{12,16}, RED, -1)}, level{level}, walls{}, coins{} {
         switch (level)
         {
         case LEVEL1:
@@ -76,33 +79,57 @@ public:
     }
 
     virtual void update() override {
-        player.input();
-        player.update();
+        player1->input();
+        player1->update();
 
-        bool foundCol {false};
+        player2->input();
+        player2->update();
+
+        bool foundCol1 {false};
+        bool foundCol2 {false};
         for (auto& wall : walls) {
             wall.update();
 
-            Rectangle col = player.GetCollision(wall.GetRect());
-            if (col.width > 0 || col.height > 0) {
-                foundCol = true;
-                player.CorrectCollision(wall.GetRect(), col);
+            Rectangle col1 = player1->GetCollision(wall.GetRect());
+            if (col1.width > 0 || col1.height > 0) {
+                foundCol1 = true;
+                player1->CorrectCollision(wall.GetRect(), col1);
+            }
+
+            Rectangle col2 = player2->GetCollision(wall.GetRect());
+            if (col2.width > 0 || col2.height > 0) {
+                foundCol2 = true;
+                player2->CorrectCollision(wall.GetRect(), col2);
             }
         }
+
+        if (!foundCol1) {
+            player1->setGrounded(false);
+        }
+
+        if (!foundCol2) {
+            player2->setGrounded(false);
+        }
+
         for (auto& coin : coins) {
             coin.update();
 
             if (!coin.IsCollected()){
-                Rectangle col = player.GetCollision(coin.GetRect());
+                Rectangle col = player1->GetCollision(coin.GetRect());
+                if (col.width > 0 || col.height > 0) {
+                    coin.SetCollected();
+                }
+            }
+
+            if (!coin.IsCollected()){
+                Rectangle col = player2->GetCollision(coin.GetRect());
                 if (col.width > 0 || col.height > 0) {
                     coin.SetCollected();
                 }
             }
         }
 
-        if (!foundCol) {
-            player.setGrounded(false);
-        }
+        
     }
 
     virtual void render() const override {
@@ -131,7 +158,8 @@ public:
         for (auto& wall : walls) {
             wall.draw(position);
         }
-        player.draw(position);
+        player1->draw(position);
+        player2->draw(position);
     }
 };
 
