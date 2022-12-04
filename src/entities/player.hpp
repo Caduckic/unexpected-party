@@ -153,9 +153,9 @@ public:
     void CorrectCollision(const Rectangle& other, const Rectangle& col) {
         Vector2 position = {rect.x - vel.x * GetFrameTime(), rect.y - vel.y * GetFrameTime()};
         if ((col.width >= rect.width && position.y + rect.height <= other.y) || (col.width >= other.width && position.y + rect.height <= other.y) ||
-            (col.width >= rect.x + rect.width - other.x && position.y + rect.height <= other.y) || (col.width >= other.x + other.width - rect.x && position.y + rect.height <= other.y) ||
+            (col.width >= rect.x + rect.width - other.x && position.y + rect.height <= other.y) || (col.width >= std::abs(other.x + other.width - rect.x) && position.y + rect.height <= other.y) ||
             (col.width >= rect.width && position.y >= other.y + other.height) || (col.width >= other.width && position.y >= other.y + other.height) ||
-            (col.width >= rect.x + rect.width - other.x && position.y >= other.y + other.height) || (col.width >= other.x + other.width - rect.x && position.y >= other.y + other.height)) {
+            (col.width >= rect.x + rect.width - other.x && position.y >= other.y + other.height) || (col.width >= std::abs(other.x + other.width - rect.x) && position.y >= other.y + other.height)) {
                 float oldVel = vel.y;
                 vel.y = 0;
                 if (col.y + col.height >= other.y + other.height) {
@@ -169,9 +169,9 @@ public:
                         speed = 0;
                     }
                     isGrounded = true;
-                }
+                } 
         }
-        else if (col.height >= rect.height || col.height >= other.height || col.height >= rect.y + rect.width - other.y || (col.height >= other.y + other.height - rect.y && position.x + rect.width <= other.x) || position.x >= other.x + other.width) {
+        else if ((col.height >= rect.height || col.height >= other.height || col.height >= rect.y + rect.width - other.y || col.height >= other.y + other.height - rect.y) && (position.x >= other.x + other.width || position.x + rect.width <= other.x)) {
             if (col.x + col.width >= other.x + other.width) {
                 rect.x = other.x + other.width;
             }
@@ -179,6 +179,7 @@ public:
                 rect.x = other.x - rect.width;
             }
         }
+        else rect.y = other.y - rect.height; // dirty fix
     }
 
     void setGrounded(bool grounded) {
@@ -187,7 +188,7 @@ public:
 
     virtual void draw(const Vector2 offset) const override {
         int facingDir = (currentDirection > 0) ? 1 : -1;
-        DrawTextureRec(_player1_tilemap, {currentSpriteIndex.x ,currentSpriteIndex.y, 16.f * facingDir,16}, {std::round(rect.x - 2), std::round(rect.y)}, WHITE);
+        DrawTextureRec(_player1_tilemap, {currentSpriteIndex.x, currentSpriteIndex.y, 16.f * facingDir,16}, {std::round(rect.x - 2 + offset.x), std::round(rect.y + offset.y)}, WHITE);
     }
 };
 

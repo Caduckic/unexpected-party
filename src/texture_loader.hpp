@@ -10,8 +10,8 @@ Texture2D _player2_tilemap;
 Texture2D _coin_tilemap;
 
 void LoadAllTextures() {
-    _level1 = LoadTexture("./resources/sprites/level_1.png");
-    _level2 = LoadTexture("./resources/sprites/level_2.png");
+    //_level1 = LoadTexture("./resources/sprites/level_1.png");
+    //_level2 = LoadTexture("./resources/sprites/level_2.png");
     _player1_tilemap = LoadTexture("./resources/sprites/player_1.png");
     _player2_tilemap = LoadTexture("./resources/sprites/player_2.png");
     _coin_tilemap = LoadTexture("./resources/sprites/coin.png");

@@ -16,6 +16,7 @@
 #include "raylib.h"
 #include "config.hpp"
 #include "texture_loader.hpp"
+#include "resources/levels/level_data.hpp"
 #include "states/state_manager.hpp"
 
 #if defined(PLATFORM_WEB)
@@ -31,6 +32,8 @@ int main(void)
     InitWindow(768, 768, "Unexpected Party");
 
     LoadAllTextures();
+
+    LoadLevelTextures();
 
     InitAudioDevice();      // Initialize audio device
 
@@ -71,6 +74,8 @@ int main(void)
     //UnloadSound(fxCoin);
     std::cout << "rekt";
     UnloadAllTextures();
+
+    UnloadLevelTextures();
 
     CloseAudioDevice();     // Close audio context
 

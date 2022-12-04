@@ -34,7 +34,7 @@ public:
     }
 
     virtual void draw(Vector2 offset) const override {
-        if (!collected) DrawTextureRec(_coin_tilemap, {currentSpriteIndex.x ,currentSpriteIndex.y, 16, 16}, {rect.x, rect.y}, WHITE);
+        if (!collected) DrawTextureRec(_coin_tilemap, {currentSpriteIndex.x,currentSpriteIndex.y, 16, 16}, {rect.x + offset.x, rect.y + offset.y}, WHITE);
     }
 };
 

@@ -6,6 +6,8 @@
 #include "../../texture_loader.hpp"
 #include <vector>
 
+enum LevelType {UNKNOWN_LEVEL = -1, LEVEL1 = 1, LEVEL2, LEVEL3, LEVEL4};
+
 struct LevelData
 {
     Texture2D texture;
@@ -14,7 +16,7 @@ struct LevelData
 };
 
 LevelData _level1_data {
-    _level1,
+    {},
     {
         { { 0, 0 }, { 16, 256} },
         { { 16, 0 }, { 224, 16} },
@@ -57,7 +59,7 @@ LevelData _level1_data {
 };
 
 LevelData _level2_data {
-    _level2,
+    {},
     {
         { { 0, 0 }, { 16, 256} },
         { { 16, 0 }, { 224, 16} },
@@ -66,14 +68,19 @@ LevelData _level2_data {
 
         { { 16, 80 }, { 80, 16 } },
         { { 144, 80 }, { 80, 16 } },
+
         { { 80, 96 }, { 16, 32 } },
         { { 144, 96 }, { 16, 32 } },
+
         { { 112, 112 }, { 16, 16 } },
-        { { 208, 112 }, { 16, 32 } },
+        { { 208, 112 }, { 32, 16 } },
+
         { { 16, 160 }, { 96, 16 } },
         { { 160, 160 }, { 80, 16 } },
+
         { { 96, 176 }, { 16, 48 } },
         { { 160, 176 }, { 16, 48 } },
+
         { { 128, 208 }, { 16, 32 } },
     },
     {
@@ -121,7 +128,14 @@ LevelData _level2_data {
     }
 };
 
+void LoadLevelTextures() {
+    _level1_data.texture = LoadTexture("./resources/sprites/level_1.png");
+    _level2_data.texture = LoadTexture("./resources/sprites/level_2.png");
+}
 
-
+void UnloadLevelTextures() {
+    UnloadTexture(_level1_data.texture);
+    UnloadTexture(_level2_data.texture);
+}
 
 #endif

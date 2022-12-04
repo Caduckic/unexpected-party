@@ -12,10 +12,35 @@
 class PlayState : public State {
 private:
     Player player;
+    LevelType level;
     std::vector<Block> walls;
     std::vector<Coin> coins;
 public:
-    PlayState(Vector2 pos) : State(pos), player{{100,100}, {12,16}, RED, 1}, walls{_level1_data.walls}, coins{_level1_data.coins} {};
+    PlayState(Vector2 pos, LevelType level) : State(pos), player{{100,100}, {12,16}, RED, 1}, level{level}, walls{}, coins{} {
+        switch (level)
+        {
+        case LEVEL1:
+            walls = _level1_data.walls;
+            coins = _level1_data.coins;
+            break;
+        case LEVEL2:
+            walls = _level2_data.walls;
+            coins = _level2_data.coins;
+            break;
+        /*case LEVEL3:
+            walls = _level3_data.walls;
+            coins = _level3_data.coins;
+            break;
+        case LEVEL4:
+            walls = _level4_data.walls;
+            coins = _level4_data.coins;
+            break;*/
+        default:
+            walls = _level1_data.walls;
+            coins = _level1_data.coins;
+            break;
+        }
+    };
     ~PlayState() = default;
 
     void UnloadLevel() {
@@ -74,11 +99,32 @@ public:
                 }
             }
         }
-        if (!foundCol) player.setGrounded(false);
+
+        if (!foundCol) {
+            player.setGrounded(false);
+        }
     }
 
     virtual void render() const override {
-        DrawTexture(_level1, 0,0, WHITE);
+        switch (level)
+        {
+        case LEVEL1:
+            DrawTexture(_level1_data.texture, position.x, position.y, WHITE);
+            break;
+        case LEVEL2:
+            DrawTexture(_level2_data.texture, position.x, position.y, WHITE);
+            break;
+        /*case LEVEL3:
+            DrawTexture(_level3_data.texture, position.x, position.y, WHITE);
+            break;
+        case LEVEL3:
+            DrawTexture(_level4_data.texture, position.x, position.y, WHITE);
+            break;*/
+        default:
+            DrawTexture(_level1_data.texture, position.x, position.y, WHITE);
+            break;
+        }
+        //DrawTexture(levelTexture, position.x, position.y, WHITE);
         for (auto& coin : coins) {
             coin.draw(position);
         }
