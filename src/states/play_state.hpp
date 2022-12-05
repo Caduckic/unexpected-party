@@ -85,6 +85,18 @@ public:
         player2->input();
         player2->update();
 
+        
+        bool bounced1 {false};
+        bool bounced2 {false};
+        Rectangle headCol1 = player1->GetCollision(player2->GetHeadHitBox());
+        if (headCol1.x > 0 || headCol1.y > 0) {
+            bounced1 = player1->CalcHeadBounce(headCol1, player2->GetVelocity());
+        }
+        Rectangle headCol2 = player2->GetCollision(player1->GetHeadHitBox());
+        if (headCol2.x > 0 || headCol2.y > 0) {
+            bounced2 = player2->CalcHeadBounce(headCol2, player1->GetVelocity());
+        }
+
         bool foundCol1 {false};
         bool foundCol2 {false};
         for (auto& wall : walls) {
@@ -92,14 +104,20 @@ public:
 
             Rectangle col1 = player1->GetCollision(wall.GetRect());
             if (col1.width > 0 || col1.height > 0) {
-                foundCol1 = true;
-                player1->CorrectCollision(wall.GetRect(), col1);
+                if (bounced1) player1->SetPosition({player1->GetRect().x, wall.GetRect().y + wall.GetRect().height}, position);
+                else {
+                    foundCol1 = true;
+                    player1->CorrectCollision(wall.GetRect(), col1);
+                }
             }
 
             Rectangle col2 = player2->GetCollision(wall.GetRect());
             if (col2.width > 0 || col2.height > 0) {
-                foundCol2 = true;
-                player2->CorrectCollision(wall.GetRect(), col2);
+                if (bounced2) player2->SetPosition({player2->GetRect().x, wall.GetRect().y + wall.GetRect().height}, position);
+                else {
+                    foundCol2 = true;
+                    player2->CorrectCollision(wall.GetRect(), col2);
+                }
             }
         }
 
@@ -129,14 +147,7 @@ public:
             }
         }
 
-        Rectangle headCol1 = player1->GetCollision(player2->GetHeadHitBox());
-        if (headCol1.x > 0 || headCol1.y > 0) {
-            player1->CalcHeadBounce(headCol1, player2->GetVelocity());
-        }
-        Rectangle headCol2 = player2->GetCollision(player1->GetHeadHitBox());
-        if (headCol2.x > 0 || headCol2.y > 0) {
-            player2->CalcHeadBounce(headCol2, player1->GetVelocity());
-        }
+        
     }
 
     virtual void render() const override {

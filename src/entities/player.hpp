@@ -227,13 +227,16 @@ public:
         }
     }
 
-    void CalcHeadBounce(const Rectangle& other, const Vector2& velocity) {
+    // TODO fix collisions
+    bool CalcHeadBounce(const Rectangle& other, const Vector2& velocity) {
         Vector2 position = {rect.x - vel.x * GetFrameTime(), rect.y - vel.y * GetFrameTime()};
-        if (vel.y > 0 && position.y + rect.height > other.y) {
+        if (position.y + rect.height < other.y) {
             rect.y = other.y - rect.height;
             headHitBox.y = rect.y;
             vel.y = velocity.y + PLAYER_BOUNCE;
+            return true;
         }
+        return false;
     }
 
     Vector2 GetVelocity() {
