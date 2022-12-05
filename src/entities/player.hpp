@@ -12,6 +12,7 @@ private:
     Color color;
     Vector2 vel;
     Vector2 currentSpriteIndex;
+    Rectangle headHitBox;
     float direction;
     float currentDirection;
     int playerNum;
@@ -25,6 +26,7 @@ private:
     bool bothPressed;
 
     void walkCycle() {
+        headHitBox.y = rect.y;
         spriteTimer += std::abs(direction) * GetFrameTime();
         currentSpriteIndex.y = 0;
         if (spriteTimer > 0.1f) {
@@ -40,24 +42,32 @@ private:
         if (spriteTimer > 0.3f) {
             spriteTimer = 0;
             currentSpriteIndex.x = currentSpriteIndex.x == 0 ? 16 : 0;
+            if (currentSpriteIndex.x == 16) {
+                headHitBox.y = rect.y + 1;
+            }
+            else headHitBox.y = rect.y;
         }
     }
 
     void jumpFrame() {
+        headHitBox.y = rect.y;
         currentSpriteIndex = {32,16};
     }
 
     void fallFrame() {
+        headHitBox.y = rect.y;
         currentSpriteIndex = {0,0};
     }
 
     void landFrame() {
+        headHitBox.y = rect.y + 1;
         spriteTimer += GetFrameTime();
         currentSpriteIndex = {16,16};
         if (spriteTimer > 0.2f) doneLanding = true;
     }
 
     void deathAnimation() {
+        headHitBox.y = rect.y;
         spriteTimer += GetFrameTime();
         if (spriteTimer > -1.8 && spriteTimer < 0) {
             spriteTimer = -2;
@@ -68,7 +78,7 @@ private:
         else if (spriteTimer > 1) spriteTimer = -2;
     }
 public:
-    Player(Vector2 pos, Vector2 size, Color color, float dir) : GameObject(pos, size), color{color}, vel{0, START_GRAVITY}, currentSpriteIndex{0,16},
+    Player(Vector2 pos, Vector2 size, Color color, float dir) : GameObject(pos, size), color{color}, vel{0, START_GRAVITY}, currentSpriteIndex{0,16}, headHitBox{pos.x,pos.y, size.x, 4},
         direction{0}, currentDirection{dir}, playerNum{dir > 0 ? 1 : 2}, speed{0}, acceleration{PLAYER_ACCELERATION}, isJump{false}, isGrounded{false}, isWalking{false}, doneLanding{true}, spriteTimer{0}, bothPressed{false} {};
     ~Player() = default;
 
@@ -161,6 +171,7 @@ public:
 
         rect.x += vel.x * GetFrameTime();
         rect.y += vel.y * GetFrameTime() < 16 ? vel.y * GetFrameTime() : 15;
+        headHitBox.x = rect.x;
 
         if (vel.y < 0) jumpFrame();
         else if (!isGrounded) fallFrame();
@@ -182,9 +193,11 @@ public:
                 vel.y = 0;
                 if (col.y + col.height >= other.y + other.height) {
                     rect.y = other.y + other.height;
+                    headHitBox.y = rect.y;
                 }
                 else if (col.y >= other.y) {
                     rect.y = other.y - rect.height;
+                    headHitBox.y -= position.y - rect.y;
                     if (!isGrounded && oldVel > 250) {
                         spriteTimer = 0;
                         doneLanding = false;
@@ -196,12 +209,17 @@ public:
         else if ((col.height >= rect.height || col.height >= other.height || col.height >= rect.y + rect.width - other.y || col.height >= other.y + other.height - rect.y) && (position.x >= other.x + other.width || position.x + rect.width <= other.x)) {
             if (col.x + col.width >= other.x + other.width) {
                 rect.x = other.x + other.width;
+                headHitBox.x = rect.x;
             }
             else if (col.x <= other.x) {
                 rect.x = other.x - rect.width;
+                headHitBox.x = rect.x;
             }
         }
-        else rect.y = other.y - rect.height; // dirty fix
+        else { // dirty fix
+            rect.y = other.y - rect.height;
+            headHitBox.y = rect.y;
+        }
     }
 
     void setGrounded(bool grounded) {
@@ -211,6 +229,7 @@ public:
     virtual void draw(const Vector2 offset) const override {
         int facingDir = (currentDirection > 0) ? 1 : -1;
         DrawTextureRec(playerNum == 1 ? _player1_tilemap : _player2_tilemap, {currentSpriteIndex.x, currentSpriteIndex.y, 16.f * facingDir,16}, {std::round(rect.x - 2 + offset.x), std::round(rect.y + offset.y)}, WHITE);
+        DrawRectangleLinesEx(headHitBox, 1, BLUE);
     }
 };
 
