@@ -33,6 +33,11 @@ private:
             spriteTimer = 0;
             currentSpriteIndex.x = currentSpriteIndex.x + 16 <= 48 ? currentSpriteIndex.x + 16 : 0;
         }
+
+        if (currentSpriteIndex.x == 16) {
+            headHitBox.y = rect.y - 1;
+        }
+        else headHitBox.y = rect.y;
     }
 
     void idleCycle() {
@@ -220,6 +225,23 @@ public:
             rect.y = other.y - rect.height;
             headHitBox.y = rect.y;
         }
+    }
+
+    void CalcHeadBounce(const Rectangle& other, const Vector2& velocity) {
+        Vector2 position = {rect.x - vel.x * GetFrameTime(), rect.y - vel.y * GetFrameTime()};
+        if (vel.y > 0 && position.y + rect.height > other.y) {
+            rect.y = other.y - rect.height;
+            headHitBox.y = rect.y;
+            vel.y = velocity.y + PLAYER_BOUNCE;
+        }
+    }
+
+    Vector2 GetVelocity() {
+        return vel;
+    }
+
+    Rectangle GetHeadHitBox() {
+        return headHitBox;
     }
 
     void setGrounded(bool grounded) {

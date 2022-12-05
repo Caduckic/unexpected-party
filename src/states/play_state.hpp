@@ -129,7 +129,14 @@ public:
             }
         }
 
-        
+        Rectangle headCol1 = player1->GetCollision(player2->GetHeadHitBox());
+        if (headCol1.x > 0 || headCol1.y > 0) {
+            player1->CalcHeadBounce(headCol1, player2->GetVelocity());
+        }
+        Rectangle headCol2 = player2->GetCollision(player1->GetHeadHitBox());
+        if (headCol2.x > 0 || headCol2.y > 0) {
+            player2->CalcHeadBounce(headCol2, player1->GetVelocity());
+        }
     }
 
     virtual void render() const override {
