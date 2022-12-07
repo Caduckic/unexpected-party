@@ -18,6 +18,7 @@ private:
     LevelType level;
     std::vector<Block> walls;
     std::vector<Coin> coins;
+    Rectangle p2col;
 public:
     PlayState(Vector2 pos, LevelType level) : State(pos), player1{std::make_shared<Player>(Vector2{100,100}, Vector2{12,16}, RED, 1)},
         player2{std::make_shared<Player>(Vector2{16,16}, Vector2{12,16}, RED, -1)}, level{level}, walls{}, coins{} {
@@ -109,7 +110,7 @@ public:
 
             Rectangle col1 = player1->GetCollision(wall.GetRect());
             if (col1.width > 0 || col1.height > 0) {
-                if (bounced1) player1->SetPosition({player1->GetRect().x, wall.GetRect().y + wall.GetRect().height}, position);
+                if (bounced1 && player1->GetRect().y < wall.GetRect().y) player1->SetPosition({player1->GetRect().x, wall.GetRect().y + wall.GetRect().height}, position);
                 else {
                     foundCol1 = true;
                     player1->CorrectCollision(wall.GetRect(), col1);
@@ -118,7 +119,8 @@ public:
 
             Rectangle col2 = player2->GetCollision(wall.GetRect());
             if (col2.width > 0 || col2.height > 0) {
-                if (bounced2) player2->SetPosition({player2->GetRect().x, wall.GetRect().y + wall.GetRect().height}, position);
+                p2col = col2;
+                if (bounced2 && player2->GetRect().y < wall.GetRect().y) player2->SetPosition({player2->GetRect().x, wall.GetRect().y + wall.GetRect().height}, position);
                 else {
                     foundCol2 = true;
                     player2->CorrectCollision(wall.GetRect(), col2);
@@ -183,6 +185,8 @@ public:
         }
         player1->draw(position);
         player2->draw(position);
+
+        DrawRectangleRec(p2col, WHITE);
     }
 };
 

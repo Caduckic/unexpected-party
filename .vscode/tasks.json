@@ -10,6 +10,12 @@
                 "PROJRCT_NAME=${fileBasenameNoExtension}",
                 "OBJS=${fileBasenameNoExtension}.cpp"
             ],
+            "windows": {
+                "command": "mingw32-make"
+            },
+            "linux": {
+                "command": "make"
+            },
             "options": {
                 "cwd": "${workspaceFolder}/src"
             },
@@ -37,9 +43,10 @@
                 "-static-libgcc",
                 "-L${env:RAYLIB_4}/lib",
                 "-lraylib",
-                "-lopengl32",
+
+                /*"-lopengl32",
                 "-lgdi32",
-                "-lwinmm"
+                "-lwinmm"*/
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
