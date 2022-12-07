@@ -2,6 +2,7 @@
 #define _PLAYER_HPP_
 
 #include <cmath>
+#include <iostream>
 #include <string>
 #include "game_object.hpp"
 #include "../config.hpp"
@@ -24,6 +25,8 @@ private:
     bool doneLanding;
     float spriteTimer;
     bool bothPressed;
+    bool isTakingDamage;
+    float damageDir;
 
     void walkCycle() {
         headHitBox.y = rect.y;
@@ -50,7 +53,9 @@ private:
             if (currentSpriteIndex.x == 16) {
                 headHitBox.y = rect.y + 1;
             }
-            else headHitBox.y = rect.y;
+            else {
+                headHitBox.y = rect.y;
+            }
         }
     }
 
@@ -82,6 +87,16 @@ private:
         else if (spriteTimer > 0.4 && spriteTimer < 1) currentSpriteIndex = {32, 32};
         else if (spriteTimer > 1) spriteTimer = -2;
     }
+
+    void takeDamageCycle() {
+        currentSpriteIndex.y = 32;
+        headHitBox.y = rect.y + 1;
+        spriteTimer += GetFrameTime();
+        if (spriteTimer > 0.15) {
+            spriteTimer = 0;
+            currentSpriteIndex.x = currentSpriteIndex.x == 16 ? 0 : 16;
+        }
+    }
 public:
     Player(Vector2 pos, Vector2 size, Color color, float dir) : GameObject(pos, size), color{color}, vel{0, START_GRAVITY}, currentSpriteIndex{0,16}, headHitBox{pos.x,pos.y, size.x, 4},
         direction{0}, currentDirection{dir}, playerNum{dir > 0 ? 1 : 2}, speed{0}, acceleration{PLAYER_ACCELERATION}, isJump{false}, isGrounded{false}, isWalking{false}, doneLanding{true}, spriteTimer{0}, bothPressed{false} {};
@@ -112,58 +127,69 @@ public:
         }
 
         direction = 0;
-        if (IsKeyDown(LEFT)) {
-            direction += -1;
-            if (oldDir + direction == 0 && !bothPressed) {
-                bothPressed = true;
-                newDir = -1;
+        if (!isTakingDamage) {
+            if (IsKeyDown(LEFT)) {
+                direction += -1;
+                if (oldDir + direction == 0 && !bothPressed) {
+                    bothPressed = true;
+                    newDir = -1;
+                }
+            } else bothPressed = false;
+            if (IsKeyDown(RIGHT)) {
+                direction += 1;
+                if (oldDir + direction == 0 && !bothPressed) {
+                    bothPressed = true;
+                    newDir = 1;
+                }
+            } else bothPressed = false;
+
+            if (bothPressed) direction += newDir;
+            //else direction = 0;
+
+            if (direction != 0) currentDirection = direction;
+
+            if (IsKeyPressed(UP) && isGrounded) {
+                isJump = true;
+                doneLanding = true;
             }
-        } else bothPressed = false;
-        if (IsKeyDown(RIGHT)) {
-            direction += 1;
-            if (oldDir + direction == 0 && !bothPressed) {
-                bothPressed = true;
-                newDir = 1;
-            }
-        } else bothPressed = false;
-
-        if (bothPressed) direction += newDir;
-        //else direction = 0;
-
-        if (direction != 0) currentDirection = direction;
-
-        if (IsKeyPressed(UP) && isGrounded) {
-            isJump = true;
-            doneLanding = true;
         }
     }
 
     virtual void update() override {
-        if (direction != 0) {
-            isWalking = true;
-            speed += direction * 600 * GetFrameTime();
-            if (speed > PLAYER_MAX_SPEED) speed = PLAYER_MAX_SPEED;
-            if (speed < -PLAYER_MAX_SPEED) speed = -PLAYER_MAX_SPEED;
-        }
-        else if (isGrounded) {
-            if (speed > 0) {
-                speed -= 600 * GetFrameTime();
-                speed < 0 ? speed = 0 : speed = speed;
+        if (!isTakingDamage){
+            if (direction != 0) {
+                isWalking = true;
+                speed += direction * 600 * GetFrameTime();
+                if (speed > PLAYER_MAX_SPEED) speed = PLAYER_MAX_SPEED;
+                if (speed < -PLAYER_MAX_SPEED) speed = -PLAYER_MAX_SPEED;
             }
-            if (speed < 0) {
-                speed += 600 * GetFrameTime();
-                speed > 0 ? speed = 0 : speed = speed;
+            else if (isGrounded) {
+                if (speed > 0) {
+                    speed -= 600 * GetFrameTime();
+                    speed < 0 ? speed = 0 : speed = speed;
+                }
+                if (speed < 0) {
+                    speed += 600 * GetFrameTime();
+                    speed > 0 ? speed = 0 : speed = speed;
+                }
             }
-        }
-        else {
-            if (speed > 0) {
-                speed -= 200 * GetFrameTime();
-                speed < 0 ? speed = 0 : speed = speed;
+            else {
+                if (speed > 0) {
+                    speed -= 200 * GetFrameTime();
+                    speed < 0 ? speed = 0 : speed = speed;
+                }
+                if (speed < 0) {
+                    speed += 200 * GetFrameTime();
+                    speed > 0 ? speed = 0 : speed = speed;
+                }
             }
-            if (speed < 0) {
-                speed += 200 * GetFrameTime();
-                speed > 0 ? speed = 0 : speed = speed;
+        } else {
+            speed -= -currentDirection * 180 * GetFrameTime();
+            if (-currentDirection > 0 && speed < 0 || -currentDirection < 0 && speed > 0) {
+                speed = 0;
             }
+            std::cout << "taking damage" << std::endl;
+            
         }
 
         vel.y = std::min(vel.y + (START_GRAVITY * GetFrameTime()), MAX_GRAVITY);
@@ -178,7 +204,8 @@ public:
         rect.y += vel.y * GetFrameTime() < 16 ? vel.y * GetFrameTime() : 15;
         headHitBox.x = rect.x;
 
-        if (vel.y < 0) jumpFrame();
+        if (isTakingDamage) takeDamageCycle(); 
+        else if (vel.y < 0) jumpFrame();
         else if (!isGrounded) fallFrame();
         else if (!doneLanding) landFrame();
         else if (isWalking) walkCycle();
@@ -209,6 +236,7 @@ public:
                         speed = 0;
                     }
                     isGrounded = true;
+                    isTakingDamage = false;
                 } 
         }
         else if ((col.height >= rect.height || col.height >= other.height || col.height >= rect.y + rect.width - other.y || col.height >= other.y + other.height - rect.y) && (position.x >= other.x + other.width || position.x + rect.width <= other.x)) {
@@ -230,13 +258,25 @@ public:
     // TODO fix collisions
     bool CalcHeadBounce(const Rectangle& other, const Vector2& velocity) {
         Vector2 position = {rect.x - vel.x * GetFrameTime(), rect.y - vel.y * GetFrameTime()};
-        if (position.y + rect.height < other.y) {
+        if (position.y + rect.height < other.y && vel.y > 50) {
             rect.y = other.y - rect.height;
             headHitBox.y = rect.y;
-            vel.y = velocity.y + PLAYER_BOUNCE;
+            vel.y = (velocity.y * GetFrameTime()) + PLAYER_BOUNCE + (vel.y * GetFrameTime());//(velocity.y * GetFrameTime()) + PLAYER_BOUNCE;
             return true;
         }
         return false;
+    }
+
+    bool IsTakingDamage() {
+        damageDir = -currentDirection;
+        return isTakingDamage;
+    }
+
+    void TakeDamage() {
+        isTakingDamage = true;
+
+        vel.y = -100;
+        speed = -currentDirection * 100;
     }
 
     Vector2 GetVelocity() {
@@ -254,7 +294,7 @@ public:
     virtual void draw(const Vector2 offset) const override {
         int facingDir = (currentDirection > 0) ? 1 : -1;
         DrawTextureRec(playerNum == 1 ? _player1_tilemap : _player2_tilemap, {currentSpriteIndex.x, currentSpriteIndex.y, 16.f * facingDir,16}, {std::round(rect.x - 2 + offset.x), std::round(rect.y + offset.y)}, WHITE);
-        DrawRectangleLinesEx(headHitBox, 1, BLUE);
+        //DrawRectangleLinesEx(headHitBox, 1, BLUE);
     }
 };
 

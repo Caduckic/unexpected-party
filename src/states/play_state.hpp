@@ -1,6 +1,7 @@
 #ifndef _PLAY_STATE_HPP_
 #define _PLAY_STATE_HPP_
 
+#include <iostream>
 #include <vector>
 #include <memory>
 #include "state.hpp"
@@ -89,13 +90,17 @@ public:
         bool bounced1 {false};
         bool bounced2 {false};
         Rectangle headCol1 = player1->GetCollision(player2->GetHeadHitBox());
-        if (headCol1.x > 0 || headCol1.y > 0) {
+        if (headCol1.x > 0 || headCol1.y > 0 && !player2->IsTakingDamage()) {
             bounced1 = player1->CalcHeadBounce(headCol1, player2->GetVelocity());
         }
         Rectangle headCol2 = player2->GetCollision(player1->GetHeadHitBox());
-        if (headCol2.x > 0 || headCol2.y > 0) {
+        if (headCol2.x > 0 || headCol2.y > 0 && !player1->IsTakingDamage()) {
             bounced2 = player2->CalcHeadBounce(headCol2, player1->GetVelocity());
         }
+
+        if (bounced1) player2->TakeDamage();
+        if (bounced2) player1->TakeDamage();
+
 
         bool foundCol1 {false};
         bool foundCol2 {false};
