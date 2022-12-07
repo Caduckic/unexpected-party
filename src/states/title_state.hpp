@@ -16,7 +16,7 @@ public:
     }
 
     virtual void render() const override {
-
+        DrawTexture(_title_screen, position.x, position.y, WHITE);
     }
 };
 

@@ -67,7 +67,7 @@ public:
         switch (state)
         {
         case TITLE:
-            nextState.reset(std::make_shared<TitleState>(startPos).get());
+            nextState = std::make_shared<TitleState>(startPos);
             break;
         case PLAY:
             nextState = std::make_shared<PlayState>(startPos, nextLevel);
@@ -121,6 +121,7 @@ public:
 
     void update() {
         if (IsKeyPressed(KEY_L)) LoadNextState(PLAY);
+        else if (IsKeyPressed(KEY_T)) LoadNextState(TITLE);
         if (!stateTransitioning)
             currentState->update();
         else {

@@ -18,7 +18,6 @@ private:
     LevelType level;
     std::vector<Block> walls;
     std::vector<Coin> coins;
-    Rectangle p2col;
 public:
     PlayState(Vector2 pos, LevelType level) : State(pos), player1{std::make_shared<Player>(Vector2{100,100}, Vector2{12,16}, RED, 1)},
         player2{std::make_shared<Player>(Vector2{16,16}, Vector2{12,16}, RED, -1)}, level{level}, walls{}, coins{} {
@@ -65,14 +64,14 @@ public:
             walls = _level2_data.walls;
             coins = _level2_data.coins;
             break;
-        /*case 3:
+        case 3:
             walls = _level3_data.walls;
             coins = _level3_data.coins;
             break;
         case 4:
             walls = _level4_data.walls;
             coins = _level4_data.coins;
-            break;*/
+            break;
         default:
             walls = _level1_data.walls;
             coins = _level1_data.coins;
@@ -91,11 +90,11 @@ public:
         bool bounced1 {false};
         bool bounced2 {false};
         Rectangle headCol1 = player1->GetCollision(player2->GetHeadHitBox());
-        if (headCol1.x > 0 || headCol1.y > 0 && !player2->IsTakingDamage()) {
+        if (headCol1.x > 0 || (headCol1.y > 0 && !player2->IsTakingDamage())) {
             bounced1 = player1->CalcHeadBounce(headCol1, player2->GetVelocity());
         }
         Rectangle headCol2 = player2->GetCollision(player1->GetHeadHitBox());
-        if (headCol2.x > 0 || headCol2.y > 0 && !player1->IsTakingDamage()) {
+        if (headCol2.x > 0 || (headCol2.y > 0 && !player1->IsTakingDamage())) {
             bounced2 = player2->CalcHeadBounce(headCol2, player1->GetVelocity());
         }
 
@@ -119,7 +118,6 @@ public:
 
             Rectangle col2 = player2->GetCollision(wall.GetRect());
             if (col2.width > 0 || col2.height > 0) {
-                p2col = col2;
                 if (bounced2 && player2->GetRect().y < wall.GetRect().y) player2->SetPosition({player2->GetRect().x, wall.GetRect().y + wall.GetRect().height}, position);
                 else {
                     foundCol2 = true;
@@ -166,12 +164,12 @@ public:
         case LEVEL2:
             DrawTexture(_level2_data.texture, position.x, position.y, WHITE);
             break;
-        /*case LEVEL3:
+        case LEVEL3:
             DrawTexture(_level3_data.texture, position.x, position.y, WHITE);
             break;
-        case LEVEL3:
+        case LEVEL4:
             DrawTexture(_level4_data.texture, position.x, position.y, WHITE);
-            break;*/
+            break;
         default:
             DrawTexture(_level1_data.texture, position.x, position.y, WHITE);
             break;
@@ -185,8 +183,6 @@ public:
         }
         player1->draw(position);
         player2->draw(position);
-
-        DrawRectangleRec(p2col, WHITE);
     }
 };
 

@@ -128,14 +128,38 @@ LevelData _level2_data {
     }
 };
 
+LevelData _level3_data = {
+    {},
+    {
+        { { 0, 0 }, { 16, 256} },
+    },
+    {
+        {{ 224, 224 }},//temp
+    }
+};
+
+LevelData _level4_data = {
+    {},
+    {
+        { { 0, 0 }, { 16, 256} },
+    },
+    {
+        {{ 224, 224 }},//temp
+    }
+};
+
 void LoadLevelTextures() {
     _level1_data.texture = LoadTexture("./resources/sprites/level_1.png");
     _level2_data.texture = LoadTexture("./resources/sprites/level_2.png");
+    _level3_data.texture = LoadTexture("./resources/sprites/level_3.png");
+    _level4_data.texture = LoadTexture("./resources/sprites/level_4.png");
 }
 
 void UnloadLevelTextures() {
     UnloadTexture(_level1_data.texture);
     UnloadTexture(_level2_data.texture);
+    UnloadTexture(_level3_data.texture);
+    UnloadTexture(_level4_data.texture);
 }
 
 #endif

@@ -186,7 +186,7 @@ public:
             }
         } else {
             speed -= -currentDirection * 180 * GetFrameTime();
-            if (-currentDirection > 0 && speed < 0 || -currentDirection < 0 && speed > 0) {
+            if ((-currentDirection > 0 && speed < 0) || (-currentDirection < 0 && speed > 0)) {
                 speed = 0;
             }
             
@@ -259,7 +259,7 @@ public:
     bool CalcHeadBounce(const Rectangle& other, const Vector2& velocity) {
         Vector2 position = {rect.x - vel.x * GetFrameTime(), rect.y - vel.y * GetFrameTime()};
         Vector2 otherOldPos = {other.x - velocity.x * GetFrameTime(), other.y - velocity.y * GetFrameTime()};
-        if (position.y + rect.height < otherOldPos.y && vel.y != velocity.y) {//std::abs(vel.y - velocity.y) > 0) {
+        if (position.y + rect.height < otherOldPos.y && (vel.y != velocity.y || velocity.y == 0)) {//std::abs(vel.y - velocity.y) > 0) {
             rect.y = other.y - rect.height;
             headHitBox.y = rect.y;
             vel.y = (velocity.y * GetFrameTime()) + PLAYER_BOUNCE + (vel.y * GetFrameTime());//(velocity.y * GetFrameTime()) + PLAYER_BOUNCE;
@@ -297,7 +297,7 @@ public:
         DrawTextureRec(playerNum == 1 ? _player1_tilemap : _player2_tilemap, {currentSpriteIndex.x, currentSpriteIndex.y, 16.f * facingDir,16}, {std::round(rect.x - 2 + offset.x), std::round(rect.y + offset.y)}, WHITE);
         //DrawRectangleLinesEx(headHitBox, 1, BLUE);
         if (playerNum == 2) {
-            DrawText(std::to_string(rect.x).c_str(),0,0,30,BLUE);
+            DrawText(std::to_string(vel.y).c_str(),0,0,30,BLUE);
         }
     }
 };
