@@ -11,6 +11,10 @@ public:
     State(Vector2 pos) : position{pos} {};
     ~State() = default;
 
+    virtual int GetLevelNum() {
+        return -1;
+    }
+
     Vector2 getPosition() const {
         return position;
     }

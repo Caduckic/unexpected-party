@@ -31,14 +31,14 @@ public:
             walls = _level2_data.walls;
             coins = _level2_data.coins;
             break;
-        /*case LEVEL3:
+        case LEVEL3:
             walls = _level3_data.walls;
             coins = _level3_data.coins;
             break;
         case LEVEL4:
             walls = _level4_data.walls;
             coins = _level4_data.coins;
-            break;*/
+            break;
         default:
             walls = _level1_data.walls;
             coins = _level1_data.coins;
@@ -46,6 +46,10 @@ public:
         }
     };
     ~PlayState() = default;
+
+    int GetLevelNum() {
+        return level;
+    }
 
     void UnloadLevel() {
         walls.clear();

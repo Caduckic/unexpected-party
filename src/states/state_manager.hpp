@@ -43,37 +43,32 @@ public:
             break;
         }
 
-        int level {GetRandomValue(1, 4)};
-        LevelType nextLevel;
-        switch (level)
-        {
-        case LEVEL1:
-            nextLevel = LEVEL1;
-            break;
-        case LEVEL2:
-            nextLevel = LEVEL2;
-            break;
-        case LEVEL3:
-            nextLevel = LEVEL3;
-            break;
-        case LEVEL4:
-            nextLevel = LEVEL4;
-            break;
-        default:
-            nextLevel = LEVEL1;
-            break;
-        }
+        
 
         switch (state)
         {
         case TITLE:
             nextState = std::make_shared<TitleState>(startPos);
             break;
-        case PLAY:
+        case PLAY: {
+            int level {GetRandomValue(1, 4)};
+
+            while (level == currentState->GetLevelNum()) {
+                level = GetRandomValue(1, 4);
+            }
+
+            LevelType nextLevel;
+
+            if (level == 1) nextLevel = LEVEL1;
+            else if (level == 2) nextLevel = LEVEL2;
+            else if (level == 3) nextLevel = LEVEL3;
+            else if (level == 4) nextLevel = LEVEL4;
+
             nextState = std::make_shared<PlayState>(startPos, nextLevel);
             break;
+        }
         default:
-            nextState.reset(std::make_shared<PlayState>(startPos, nextLevel).get());
+            nextState = std::make_shared<PlayState>(startPos, LEVEL1);
             break;
         }
         stateTransitioning = true;
