@@ -10,6 +10,7 @@
 #include "../entities/coin.hpp"
 #include "../texture_loader.hpp"
 #include "../resources/levels/level_data.hpp"
+#include "../ui_layouts.hpp"
 
 class PlayState : public State {
 private:
@@ -18,9 +19,11 @@ private:
     LevelType level;
     std::vector<Block> walls;
     std::vector<Coin> coins;
+    UICanvas pauseMenu;
+    bool isPaused;
 public:
     PlayState(Vector2 pos, LevelType level) : State(pos), player1{std::make_shared<Player>(Vector2{100,100}, Vector2{12,16}, RED, 1)},
-        player2{std::make_shared<Player>(Vector2{16,16}, Vector2{12,16}, RED, -1)}, level{level}, walls{}, coins{} {
+        player2{std::make_shared<Player>(Vector2{16,16}, Vector2{12,16}, RED, -1)}, level{level}, walls{}, coins{}, pauseMenu{{48,48}, {256, 256}, PAUSE_LAYOUT}, isPaused{false} {
         switch (level)
         {
         case LEVEL1:
@@ -46,6 +49,14 @@ public:
         }
     };
     ~PlayState() = default;
+
+    GameState GetGameState() override {
+        return PLAY;
+    }
+
+    virtual const UICanvas& GetCurrentCanvas() const override {
+        return pauseMenu;
+    }
 
     int GetLevelNum() {
         return level;
@@ -84,79 +95,88 @@ public:
     }
 
     virtual void update() override {
-        player1->input();
-        player1->update();
-
-        player2->input();
-        player2->update();
-
-        
-        bool bounced1 {false};
-        bool bounced2 {false};
-        Rectangle headCol1 = player1->GetCollision(player2->GetHeadHitBox());
-        if (headCol1.x > 0 || (headCol1.y > 0 && !player2->IsTakingDamage())) {
-            bounced1 = player1->CalcHeadBounce(headCol1, player2->GetVelocity());
-        }
-        Rectangle headCol2 = player2->GetCollision(player1->GetHeadHitBox());
-        if (headCol2.x > 0 || (headCol2.y > 0 && !player1->IsTakingDamage())) {
-            bounced2 = player2->CalcHeadBounce(headCol2, player1->GetVelocity());
+        if (IsKeyPressed(KEY_P)) {
+            isPaused = !isPaused;
         }
 
-        if (bounced1) player2->TakeDamage();
-        if (bounced2) player1->TakeDamage();
+        if (!isPaused) {
+            pauseMenu.update();
+
+            player1->input();
+            player1->update();
+
+            player2->input();
+            player2->update();
+
+            
+            bool bounced1 {false};
+            bool bounced2 {false};
+            Rectangle headCol1 = player1->GetCollision(player2->GetHeadHitBox());
+            if (headCol1.x > 0 || (headCol1.y > 0 && !player2->IsTakingDamage())) {
+                bounced1 = player1->CalcHeadBounce(headCol1, player2->GetVelocity());
+            }
+            Rectangle headCol2 = player2->GetCollision(player1->GetHeadHitBox());
+            if (headCol2.x > 0 || (headCol2.y > 0 && !player1->IsTakingDamage())) {
+                bounced2 = player2->CalcHeadBounce(headCol2, player1->GetVelocity());
+            }
+
+            if (bounced1) player2->TakeDamage();
+            if (bounced2) player1->TakeDamage();
 
 
-        bool foundCol1 {false};
-        bool foundCol2 {false};
-        for (auto& wall : walls) {
-            wall.update();
+            bool foundCol1 {false};
+            bool foundCol2 {false};
+            for (auto& wall : walls) {
+                wall.update();
 
-            Rectangle col1 = player1->GetCollision(wall.GetRect());
-            if (col1.width > 0 || col1.height > 0) {
-                if (bounced1 && player1->GetRect().y < wall.GetRect().y) player1->SetPosition({player1->GetRect().x, wall.GetRect().y + wall.GetRect().height}, position);
-                else {
-                    foundCol1 = true;
-                    player1->CorrectCollision(wall.GetRect(), col1);
+                Rectangle col1 = player1->GetCollision(wall.GetRect());
+                if (col1.width > 0 || col1.height > 0) {
+                    if (bounced1 && player1->GetRect().y < wall.GetRect().y) player1->SetPosition({player1->GetRect().x, wall.GetRect().y + wall.GetRect().height}, position);
+                    else {
+                        foundCol1 = true;
+                        player1->CorrectCollision(wall.GetRect(), col1);
+                    }
+                }
+
+                Rectangle col2 = player2->GetCollision(wall.GetRect());
+                if (col2.width > 0 || col2.height > 0) {
+                    if (bounced2 && player2->GetRect().y < wall.GetRect().y) player2->SetPosition({player2->GetRect().x, wall.GetRect().y + wall.GetRect().height}, position);
+                    else {
+                        foundCol2 = true;
+                        player2->CorrectCollision(wall.GetRect(), col2);
+                    }
                 }
             }
 
-            Rectangle col2 = player2->GetCollision(wall.GetRect());
-            if (col2.width > 0 || col2.height > 0) {
-                if (bounced2 && player2->GetRect().y < wall.GetRect().y) player2->SetPosition({player2->GetRect().x, wall.GetRect().y + wall.GetRect().height}, position);
-                else {
-                    foundCol2 = true;
-                    player2->CorrectCollision(wall.GetRect(), col2);
+            if (!foundCol1) {
+                player1->setGrounded(false);
+            }
+
+            if (!foundCol2) {
+                player2->setGrounded(false);
+            }
+
+            for (auto& coin : coins) {
+                coin.update();
+
+                if (!coin.IsCollected()){
+                    Rectangle col = player1->GetCollision(coin.GetRect());
+                    if (col.width > 0 || col.height > 0) {
+                        coin.SetCollected();
+                    }
+                }
+
+                if (!coin.IsCollected()){
+                    Rectangle col = player2->GetCollision(coin.GetRect());
+                    if (col.width > 0 || col.height > 0) {
+                        coin.SetCollected();
+                    }
                 }
             }
         }
-
-        if (!foundCol1) {
-            player1->setGrounded(false);
+        else {
+            pauseMenu.update();
         }
-
-        if (!foundCol2) {
-            player2->setGrounded(false);
-        }
-
-        for (auto& coin : coins) {
-            coin.update();
-
-            if (!coin.IsCollected()){
-                Rectangle col = player1->GetCollision(coin.GetRect());
-                if (col.width > 0 || col.height > 0) {
-                    coin.SetCollected();
-                }
-            }
-
-            if (!coin.IsCollected()){
-                Rectangle col = player2->GetCollision(coin.GetRect());
-                if (col.width > 0 || col.height > 0) {
-                    coin.SetCollected();
-                }
-            }
-        }
-
-        
     }
 
     virtual void render() const override {
@@ -189,6 +209,10 @@ public:
         player2->draw(position);
 
         //DrawTextEx(ROMULUS_FONT, "test TEST", {0,0},40, 2, BLUE);
+        if (isPaused) {
+            DrawTexture(_pause_canvas, position.x + 48, position.y + 48, WHITE);
+            pauseMenu.draw(position);
+        }
     }
 };
 

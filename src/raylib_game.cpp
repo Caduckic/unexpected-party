@@ -18,18 +18,23 @@
 #include "texture_loader.hpp"
 #include "resources/levels/level_data.hpp"
 #include "states/state_manager.hpp"
+#include "camera_manager.hpp"
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
 #endif
 
-void UpdateDrawFrame(Camera2D& cam);
+void UpdateDrawFrame();
 
 int main(void)
 {
     // Initialization
     //---------------------------------------------------------
     InitWindow(768, 768, "Unexpected Party");
+
+    CameraManager::Get().LoadCam();
+
+    SetMousePosition(0,0);
 
     LoadGameFont();
 
@@ -39,7 +44,7 @@ int main(void)
 
     InitAudioDevice();      // Initialize audio device
 
-    Camera2D cam = {{0,0}, {0,0}, 0, GetScreenHeight() / 256.f};
+    //Camera2D cam = {{0,0}, {0,0}, 0, GetScreenHeight() / 256.f};
 
     // Load global data (assets that must be available in all screens, i.e. font)
     //font = LoadFont("resources/mecha.png");
@@ -54,15 +59,15 @@ int main(void)
     //InitLogoScreen();
 
 #if defined(PLATFORM_WEB)
-    emscripten_set_main_loop(UpdateDrawFrame(cam), 60, 1);
+    emscripten_set_main_loop(UpdateDrawFrame(), 60, 1);
 #else
     SetTargetFPS(TARGET_FPS);       // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
     // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
+    while (!WindowShouldClose() && !StateManager::Get().IsQuitGame())    // Detect window close button or ESC key
     {
-        UpdateDrawFrame(cam);
+        UpdateDrawFrame();
     }
 #endif
 
@@ -89,12 +94,12 @@ int main(void)
     return 0;
 }
 
-void UpdateDrawFrame(Camera2D& cam) {
+void UpdateDrawFrame() {
     StateManager::Get().update();
 
 
     BeginDrawing();
-    BeginMode2D(cam);
+    BeginMode2D(CameraManager::Get().GetCam());
         ClearBackground(RAYWHITE);
 
         StateManager::Get().render();

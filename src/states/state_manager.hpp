@@ -6,21 +6,28 @@
 #include "play_state.hpp"
 #include <memory>
 
-enum GameState {UNKNOWN = -1, TITLE = 0, OPTIONS, PLAY, ENDING};
-
 class StateManager {
 private:
-    StateManager() : currentState{std::make_shared<PlayState>(Vector2{0,0}, LEVEL1)}, nextState{nullptr}, stateTransitioning{false} {};
+    StateManager() : currentState{std::make_shared<TitleState>(Vector2{0,0})}, nextState{nullptr}, stateTransitioning{false}, isQuitGame{false} {};
     static StateManager instance;
     std::shared_ptr<State> currentState;
     std::shared_ptr<State> nextState;
     bool stateTransitioning;
+    bool isQuitGame;
 public:
     static StateManager& Get() {
         return instance;
     }
     StateManager(const StateManager&) = delete;
     ~StateManager() = default;
+
+    bool IsQuitGame() {
+        return isQuitGame;
+    }
+
+    void QuitGame() {
+        isQuitGame = true;
+    }
 
     void LoadNextState(GameState state) {
         int dir {GetRandomValue(0, 3)};
@@ -117,8 +124,30 @@ public:
     void update() {
         if (IsKeyPressed(KEY_L)) LoadNextState(PLAY);
         else if (IsKeyPressed(KEY_T)) LoadNextState(TITLE);
-        if (!stateTransitioning)
+        if (!stateTransitioning) {
             currentState->update();
+            for (const auto &button : currentState->GetCurrentCanvas().GetButtons()) {
+                
+                if (button.second.IsPressed()) {
+                    UIAction action = button.second.GetAction();
+
+                    switch (action)
+                    {
+                    case UIAction::GOTO_PLAY:
+                        LoadNextState(PLAY);
+                        break;
+                    case UIAction::GOTO_TITLE:
+                        LoadNextState(TITLE);
+                        break;
+                    case UIAction::QUIT_GAME:
+                        QuitGame();
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
+        }
         else {
             TransitionState();
         }

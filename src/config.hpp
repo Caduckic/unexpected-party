@@ -2,6 +2,7 @@
 #define _CONFIG_HPP_
 
 #include "raylib.h"
+#include <map>
 
 const Vector2 SCREEN_SIZE {256, 256};
 const float START_GRAVITY {400}, MAX_GRAVITY {500};

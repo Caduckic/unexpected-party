@@ -12,7 +12,7 @@ public:
     GameObject(Vector2 position, Vector2 size) : rect{position.x, position.y, size.x, size.y} {};
     ~GameObject() = default;
 
-    virtual Rectangle GetCollision(const Rectangle& other) const {
+    Rectangle GetCollision(const Rectangle& other) const {
         return GetCollisionRec(rect, other);
     }
 
