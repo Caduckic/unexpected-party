@@ -297,7 +297,7 @@ public:
         DrawTextureRec(playerNum == 1 ? _player1_tilemap : _player2_tilemap, {currentSpriteIndex.x, currentSpriteIndex.y, 16.f * facingDir,16}, {std::round(rect.x - 2 + offset.x), std::round(rect.y + offset.y)}, WHITE);
         //DrawRectangleLinesEx(headHitBox, 1, BLUE);
         if (playerNum == 2) {
-            DrawText(std::to_string(vel.y).c_str(),0,0,30,BLUE);
+            //DrawText(std::to_string(vel.y).c_str(),0,0,30,BLUE);
         }
     }
 };

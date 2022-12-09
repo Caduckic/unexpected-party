@@ -9,4 +9,16 @@ const float PLAYER_ACCELERATION {50}, PLAYER_MAX_SPEED {100}, PLAYER_JUMP {-200}
 
 const int TARGET_FPS {144};
 
+const Color _COLOR3 {48,98,48,255};
+
+Font ROMULUS_FONT;
+
+void LoadGameFont() {
+    ROMULUS_FONT = LoadFont("resources/fonts/romulus.png");
+}
+
+void UnloadGameFont() {
+    UnloadFont(ROMULUS_FONT);
+}
+
 #endif

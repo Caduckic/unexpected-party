@@ -31,6 +31,8 @@ int main(void)
     //---------------------------------------------------------
     InitWindow(768, 768, "Unexpected Party");
 
+    LoadGameFont();
+
     LoadAllTextures();
 
     LoadLevelTextures();
@@ -73,6 +75,8 @@ int main(void)
     //UnloadMusicStream(music);
     //UnloadSound(fxCoin);
     std::cout << "rekt";
+    UnloadGameFont();
+
     UnloadAllTextures();
 
     UnloadLevelTextures();

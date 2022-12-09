@@ -1,6 +1,9 @@
 # Prerequisites
 *.d
 
+# Sprite files
+*.aseprite
+
 # Object files
 *.o
 *.ko

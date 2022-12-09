@@ -187,6 +187,8 @@ public:
         }
         player1->draw(position);
         player2->draw(position);
+
+        //DrawTextEx(ROMULUS_FONT, "test TEST", {0,0},40, 2, BLUE);
     }
 };
 
