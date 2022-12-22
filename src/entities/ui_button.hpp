@@ -27,6 +27,10 @@ public:
         return isPressed;
     }
 
+    void Press() {
+        isPressed = true;
+    }
+
     bool IsSelected() const {
         return isSelected;
     }
@@ -54,7 +58,7 @@ public:
 
     void draw(Vector2 offset) const override {
         Vector2 centreOffset = {(rect.width - (MeasureTextEx(ROMULUS_FONT, text.c_str(), 16, 1).x)) / 2, (rect.height - (MeasureTextEx(ROMULUS_FONT, text.c_str(), 16, 1).y)) / 2};
-        DrawRectangle(rect.x + offset.x, rect.y + offset.y, rect.width, rect.height, BLUE);
+        //DrawRectangle(rect.x + offset.x, rect.y + offset.y, rect.width, rect.height, BLUE);
         DrawTextEx(ROMULUS_FONT, text.c_str(), {rect.x + centreOffset.x + offset.x, rect.y + centreOffset.y + offset.y}, 16, 1, _COLOR3);
         if (isSelected) DrawTexture(_ui_arrow, rect.x + offset.x - 16, rect.y + offset.y, WHITE);
     }

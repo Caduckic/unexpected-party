@@ -2,9 +2,10 @@
 #define _COIN_HPP_
 
 #include "game_object.hpp"
+#include "player.hpp"
 #include "../texture_loader.hpp"
 
-class Coin : public GameObject {
+class Coin : public GameObject { // TODO need to abstract to be player class for collision behaviour
 private:
     bool collected;
     float spriteTimer;

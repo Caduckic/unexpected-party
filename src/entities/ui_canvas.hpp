@@ -40,7 +40,7 @@ public:
     }
 
     void update() override {
-        
+        bool buttonPressed {false};
         for (auto &button : buttons) {
             button.second.update();
             if (button.second.IsSelected() && button.first != currentButtonID) {
@@ -59,10 +59,22 @@ public:
             NavigateButtons(-1);
         }
 
+        if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
+            buttonPressed = true;
+        }
+
         for (auto &button : buttons) {
             if (button.first != currentButtonID) {
                 button.second.SetSelected(false);
             } else button.second.SetSelected(true);
+        }
+
+        if (buttonPressed) {
+            for (auto &button : buttons) {
+                if (button.first == currentButtonID) {
+                    button.second.Press();
+                }
+            }
         }
     }
 

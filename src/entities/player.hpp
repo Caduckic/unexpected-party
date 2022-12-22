@@ -255,7 +255,6 @@ public:
         }
     }
 
-    // TODO fix collisions
     bool CalcHeadBounce(const Rectangle& other, const Vector2& velocity) {
         Vector2 position = {rect.x - vel.x * GetFrameTime(), rect.y - vel.y * GetFrameTime()};
         Vector2 otherOldPos = {other.x - velocity.x * GetFrameTime(), other.y - velocity.y * GetFrameTime()};

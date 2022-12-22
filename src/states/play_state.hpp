@@ -6,8 +6,10 @@
 #include <memory>
 #include "state.hpp"
 #include "../entities/player.hpp"
+#include "../entities/new_player.hpp"
 #include "../entities/block.hpp"
 #include "../entities/coin.hpp"
+#include "../entities/entity_object.hpp"
 #include "../texture_loader.hpp"
 #include "../resources/levels/level_data.hpp"
 #include "../ui_layouts.hpp"
@@ -16,6 +18,8 @@ class PlayState : public State {
 private:
     std::shared_ptr<Player> player1;
     std::shared_ptr<Player> player2;
+    NewPlayer player3;
+    EntityObject entity {{32,32}, {16,16}, 1};
     LevelType level;
     std::vector<Block> walls;
     std::vector<Coin> coins;
@@ -23,7 +27,7 @@ private:
     bool isPaused;
 public:
     PlayState(Vector2 pos, LevelType level) : State(pos), player1{std::make_shared<Player>(Vector2{100,100}, Vector2{12,16}, RED, 1)},
-        player2{std::make_shared<Player>(Vector2{16,16}, Vector2{12,16}, RED, -1)}, level{level}, walls{}, coins{}, pauseMenu{{48,48}, {256, 256}, PAUSE_LAYOUT}, isPaused{false} {
+        player2{std::make_shared<Player>(Vector2{16,16}, Vector2{12,16}, RED, -1)}, player3{{64,64}, {12,16}, 1}, level{level}, walls{}, coins{}, pauseMenu{{48,48}, {256, 256}, PAUSE_LAYOUT}, isPaused{false} {
         switch (level)
         {
         case LEVEL1:
@@ -108,9 +112,15 @@ public:
             player2->input();
             player2->update();
 
+            player3.input();
+            player3.update();
+
+            entity.input();
+            entity.update();
             
             bool bounced1 {false};
             bool bounced2 {false};
+            bool bounced3 {false};
             Rectangle headCol1 = player1->GetCollision(player2->GetHeadHitBox());
             if (headCol1.x > 0 || (headCol1.y > 0 && !player2->IsTakingDamage())) {
                 bounced1 = player1->CalcHeadBounce(headCol1, player2->GetVelocity());
@@ -119,13 +129,20 @@ public:
             if (headCol2.x > 0 || (headCol2.y > 0 && !player1->IsTakingDamage())) {
                 bounced2 = player2->CalcHeadBounce(headCol2, player1->GetVelocity());
             }
+            Rectangle headCol3 = player2->GetCollision(player3.GetHeadHitBox());
+            if (headCol3.width > 0 || (headCol3.height > 0 && !player3.IsTakingDamage())) {
+                std::cout << player3.GetHeadHitBox().width << ", " <<headCol3.height << std::endl;
+                bounced3 = player2->CalcHeadBounce(headCol3, player3.GetVelocity());
+            }
 
             if (bounced1) player2->TakeDamage();
             if (bounced2) player1->TakeDamage();
+            if (bounced3) player3.TakeDamage();
 
 
             bool foundCol1 {false};
             bool foundCol2 {false};
+            bool foundCol3 {false};
             for (auto& wall : walls) {
                 wall.update();
 
@@ -146,6 +163,21 @@ public:
                         player2->CorrectCollision(wall.GetRect(), col2);
                     }
                 }
+
+                Rectangle col3 = entity.GetCollision(wall.GetRect());
+                if (col3.width > 0 || col3.height > 0) {
+                        foundCol2 = true;
+                        entity.CorrectCollision(wall.GetRect(), col3);
+                }
+
+                Rectangle col4 = player3.GetCollision(wall.GetRect());
+                if (col4.width > 0 || col4.height > 0) {
+                    //if (bounced2 && player3.GetRect().y < wall.GetRect().y) player3.SetPosition({player3.GetRect().x, wall.GetRect().y + wall.GetRect().height}, position);
+                    //else {
+                        foundCol3 = true;
+                        player3.CorrectCollision(wall.GetRect(), col4);
+                    //}
+                }
             }
 
             if (!foundCol1) {
@@ -154,6 +186,10 @@ public:
 
             if (!foundCol2) {
                 player2->setGrounded(false);
+            }
+
+            if (!foundCol3) {
+                player3.SetGrounded(false);
             }
 
             for (auto& coin : coins) {
@@ -207,12 +243,15 @@ public:
         }
         player1->draw(position);
         player2->draw(position);
+        player3.draw(position);
 
         //DrawTextEx(ROMULUS_FONT, "test TEST", {0,0},40, 2, BLUE);
         if (isPaused) {
             DrawTexture(_pause_canvas, position.x + 48, position.y + 48, WHITE);
             pauseMenu.draw(position);
         }
+
+        entity.draw(position);
     }
 };
 
