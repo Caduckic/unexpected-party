@@ -15,12 +15,12 @@ protected:
     bool isGrounded;
     bool isWalking;
 
-    virtual void CalculateInputMovement(float accelRate, float deaccelRate) {
+    virtual void CalculateInputMovement(float accelRate, float deaccelRate, float maxSpeed) {
         if (direction != 0) {
             isWalking = true;
             speed += direction * accelRate * GetFrameTime();
-            if (speed > PLAYER_MAX_SPEED) speed = PLAYER_MAX_SPEED;
-            if (speed < -PLAYER_MAX_SPEED) speed = -PLAYER_MAX_SPEED;
+            if (speed > maxSpeed) speed = maxSpeed;
+            if (speed < -maxSpeed) speed = -maxSpeed;
         }
         else if (isGrounded) {
             if (speed > 0) {
@@ -53,11 +53,11 @@ protected:
         rect.y += vel.y * GetFrameTime() < 16 ? vel.y * GetFrameTime() : 15;
     }
     
-    virtual void CorrectCollisionAction() {
+    virtual void CorrectCollisionActionY() {
 
     }
 
-    virtual void CorrectCollisionAction2(Vector2 position) {
+    virtual void CorrectCollisionActionX() {
 
     }
 
@@ -69,7 +69,7 @@ protected:
 
     }
 public:
-    EntityObject(Vector2 pos, Vector2 size, float dir) : GameObject(pos, size), vel{0, START_GRAVITY}, currentSpriteIndex{0,0}, direction{0}, currentDirection{dir}, speed{0}, isGrounded{false}, isWalking{false} {};
+    EntityObject(Vector2 pos, Vector2 size, float dir) : GameObject(pos, size), vel{0, START_GRAVITY}, currentSpriteIndex{0,0}, direction{dir}, currentDirection{dir}, speed{0}, isGrounded{false}, isWalking{false} {};
     ~EntityObject() = default;
 
     Vector2 GetVelocity() {
@@ -92,11 +92,11 @@ public:
                 vel.y = 0;
                 if (col.y + col.height >= other.y + other.height) {
                     rect.y = other.y + other.height;
-                    CorrectCollisionAction();
+                    CorrectCollisionActionY();
                 }
                 else if (col.y >= other.y) {
                     rect.y = other.y - rect.height;
-                    CorrectCollisionAction2(position);
+                    CorrectCollisionActionY();
                     if (!isGrounded && oldVel > 250) {
                         CorrectionCollisionLand();
                         speed = 0;
@@ -108,16 +108,16 @@ public:
         else if ((col.height >= rect.height || col.height >= other.height || col.height >= rect.y + rect.width - other.y || col.height >= other.y + other.height - rect.y) && (position.x >= other.x + other.width || position.x + rect.width <= other.x)) {
             if (col.x + col.width >= other.x + other.width) {
                 rect.x = other.x + other.width;
-                CorrectCollisionAction();
+                CorrectCollisionActionX();
             }
             else if (col.x <= other.x) {
                 rect.x = other.x - rect.width;
-                CorrectCollisionAction();
+                CorrectCollisionActionX();
             }
         }
         else { // dirty fix
             rect.y = other.y - rect.height;
-            CorrectCollisionAction();
+            CorrectCollisionActionY();
         }
     }
 
@@ -127,7 +127,7 @@ public:
     }
 
     virtual void update() override {
-        CalculateInputMovement(600, 600);
+        CalculateInputMovement(600, 600, PLAYER_MAX_SPEED);
         ApplyMovement();
 
         // must always end with this

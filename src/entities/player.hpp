@@ -1,27 +1,15 @@
-#ifndef _PLAYER_HPP_
-#define _PLAYER_HPP_
+#ifndef _NEW_PLAYER_HPP_
+#define _NEW_PLAYER_HPP_
 
-#include <cmath>
-#include <iostream>
-#include <string>
-#include "game_object.hpp"
-#include "../config.hpp"
+#include "entity_object.hpp"
 #include "../texture_loader.hpp"
 
-class Player : public GameObject {
+class Player : public EntityObject {
 private:
-    Color color;
-    Vector2 vel;
-    Vector2 currentSpriteIndex;
     Rectangle headHitBox;
-    float direction;
-    float currentDirection;
     int playerNum;
-    float speed;
     float acceleration;
     bool isJump;
-    bool isGrounded;
-    bool isWalking;
     bool doneLanding;
     float spriteTimer;
     bool bothPressed;
@@ -98,12 +86,47 @@ private:
             currentSpriteIndex.x = currentSpriteIndex.x == 16 ? 0 : 16;
         }
     }
+
+    virtual void CorrectCollisionActionX() {
+        headHitBox.x = rect.x;
+    }
+
+    virtual void CorrectCollisionActionY() {
+        headHitBox.y = rect.y;
+    }
+
+    virtual void CorrectionCollisionLand() {
+        spriteTimer = 0;
+        doneLanding = false;
+    }
+
+    virtual void CorrectionCollisionGrounded() {
+        isTakingDamage = false;
+    }
 public:
-    Player(Vector2 pos, Vector2 size, Color color, float dir) : GameObject(pos, size), color{color}, vel{0, START_GRAVITY}, currentSpriteIndex{0,16}, headHitBox{pos.x,pos.y, size.x, 4},
-        direction{0}, currentDirection{dir}, playerNum{dir > 0 ? 1 : 2}, speed{0}, acceleration{PLAYER_ACCELERATION}, isJump{false}, isGrounded{false}, isWalking{false}, doneLanding{true}, spriteTimer{0}, bothPressed{false} {};
+    Player(Vector2 pos, Vector2 size, float dir) : EntityObject(pos, size, dir), headHitBox{pos.x,pos.y, size.x, 4}, playerNum{dir > 0 ? 1 : 2}, acceleration{PLAYER_ACCELERATION}, isJump{false}, doneLanding{true}, spriteTimer{0}, bothPressed{false}, isTakingDamage{false}, damageDir{0} {};
     ~Player() = default;
 
-    virtual void input() {
+    void CalculateDamageMovement() {
+        speed -= -currentDirection * 180 * GetFrameTime();
+        if ((-currentDirection > 0 && speed < 0) || (-currentDirection < 0 && speed > 0)) {
+            speed = 0;
+        }
+    }
+
+    bool CalcHeadBounce(const Rectangle& other, const Vector2& velocity) {
+        Vector2 position = {rect.x - vel.x * GetFrameTime(), rect.y - vel.y * GetFrameTime()};
+        Vector2 otherOldPos = {other.x - velocity.x * GetFrameTime(), other.y - velocity.y * GetFrameTime()};
+        if (position.y + rect.height < otherOldPos.y && (vel.y != velocity.y || velocity.y == 0)) {//std::abs(vel.y - velocity.y) > 0) {
+            rect.y = other.y - rect.height;
+            headHitBox.y = rect.y;
+            vel.y = (velocity.y * GetFrameTime()) + PLAYER_BOUNCE + (vel.y * GetFrameTime());//(velocity.y * GetFrameTime()) + PLAYER_BOUNCE;
+            return true;
+        }
+        return false;
+    }
+
+    virtual void input() override {
         float newDir {direction};
         float oldDir {direction};
 
@@ -156,52 +179,36 @@ public:
         }
     }
 
+    bool IsTakingDamage() {
+        damageDir = -currentDirection;
+        return isTakingDamage;
+    }
+
+    Rectangle GetHeadHitBox() {
+        return headHitBox;
+    }
+
+    void TakeDamage() {
+        isTakingDamage = true;
+
+        vel.y = -100;
+        speed = -currentDirection * 100;
+    }
+
     virtual void update() override {
-        if (!isTakingDamage){
-            if (direction != 0) {
-                isWalking = true;
-                speed += direction * 600 * GetFrameTime();
-                if (speed > PLAYER_MAX_SPEED) speed = PLAYER_MAX_SPEED;
-                if (speed < -PLAYER_MAX_SPEED) speed = -PLAYER_MAX_SPEED;
-            }
-            else if (isGrounded) {
-                if (speed > 0) {
-                    speed -= 600 * GetFrameTime();
-                    speed < 0 ? speed = 0 : speed = speed;
-                }
-                if (speed < 0) {
-                    speed += 600 * GetFrameTime();
-                    speed > 0 ? speed = 0 : speed = speed;
-                }
-            }
-            else {
-                if (speed > 0) {
-                    speed -= 200 * GetFrameTime();
-                    speed < 0 ? speed = 0 : speed = speed;
-                }
-                if (speed < 0) {
-                    speed += 200 * GetFrameTime();
-                    speed > 0 ? speed = 0 : speed = speed;
-                }
-            }
+        if (!isTakingDamage) {
+            CalculateInputMovement(600, 600, PLAYER_MAX_SPEED);
         } else {
-            speed -= -currentDirection * 180 * GetFrameTime();
-            if ((-currentDirection > 0 && speed < 0) || (-currentDirection < 0 && speed > 0)) {
-                speed = 0;
-            }
-            
+            CalculateDamageMovement();
         }
 
-        vel.y = std::min(vel.y + (START_GRAVITY * GetFrameTime()), MAX_GRAVITY);
-        vel.x = speed;
         if (isJump) {
             isJump = false;
             isGrounded = false;
             vel.y = PLAYER_JUMP;
         }
 
-        rect.x += vel.x * GetFrameTime();
-        rect.y += vel.y * GetFrameTime() < 16 ? vel.y * GetFrameTime() : 15;
+        ApplyMovement();
         headHitBox.x = rect.x;
 
         if (isTakingDamage) takeDamageCycle(); 
@@ -215,83 +222,7 @@ public:
         isWalking = false;
     }
 
-    void CorrectCollision(const Rectangle& other, const Rectangle& col) {
-        Vector2 position = {rect.x - vel.x * GetFrameTime(), rect.y - vel.y * GetFrameTime()};
-        if ((col.width >= rect.width && position.y + rect.height <= other.y) || (col.width >= other.width && position.y + rect.height <= other.y) ||
-            (col.width >= rect.x + rect.width - other.x && position.y + rect.height <= other.y) || (col.width >= std::abs(other.x + other.width - rect.x) && position.y + rect.height <= other.y) ||
-            (col.width >= rect.width && position.y >= other.y + other.height) || (col.width >= other.width && position.y >= other.y + other.height) ||
-            (col.width >= rect.x + rect.width - other.x && position.y >= other.y + other.height) || (col.width >= std::abs(other.x + other.width - rect.x) && position.y >= other.y + other.height)) {
-                float oldVel = vel.y;
-                vel.y = 0;
-                if (col.y + col.height >= other.y + other.height) {
-                    rect.y = other.y + other.height;
-                    headHitBox.y = rect.y;
-                }
-                else if (col.y >= other.y) {
-                    rect.y = other.y - rect.height;
-                    headHitBox.y -= position.y - rect.y;
-                    if (!isGrounded && oldVel > 250) {
-                        spriteTimer = 0;
-                        doneLanding = false;
-                        speed = 0;
-                    }
-                    isGrounded = true;
-                    isTakingDamage = false;
-                } 
-        }
-        else if ((col.height >= rect.height || col.height >= other.height || col.height >= rect.y + rect.width - other.y || col.height >= other.y + other.height - rect.y) && (position.x >= other.x + other.width || position.x + rect.width <= other.x)) {
-            if (col.x + col.width >= other.x + other.width) {
-                rect.x = other.x + other.width;
-                headHitBox.x = rect.x;
-            }
-            else if (col.x <= other.x) {
-                rect.x = other.x - rect.width;
-                headHitBox.x = rect.x;
-            }
-        }
-        else { // dirty fix
-            rect.y = other.y - rect.height;
-            headHitBox.y = rect.y;
-        }
-    }
-
-    bool CalcHeadBounce(const Rectangle& other, const Vector2& velocity) {
-        Vector2 position = {rect.x - vel.x * GetFrameTime(), rect.y - vel.y * GetFrameTime()};
-        Vector2 otherOldPos = {other.x - velocity.x * GetFrameTime(), other.y - velocity.y * GetFrameTime()};
-        if (position.y + rect.height < otherOldPos.y && (vel.y != velocity.y || velocity.y == 0)) {//std::abs(vel.y - velocity.y) > 0) {
-            rect.y = other.y - rect.height;
-            headHitBox.y = rect.y;
-            vel.y = (velocity.y * GetFrameTime()) + PLAYER_BOUNCE + (vel.y * GetFrameTime());//(velocity.y * GetFrameTime()) + PLAYER_BOUNCE;
-            return true;
-        }
-        return false;
-    }
-
-    bool IsTakingDamage() {
-        damageDir = -currentDirection;
-        return isTakingDamage;
-    }
-
-    void TakeDamage() {
-        isTakingDamage = true;
-
-        vel.y = -100;
-        speed = -currentDirection * 100;
-    }
-
-    Vector2 GetVelocity() {
-        return vel;
-    }
-
-    Rectangle GetHeadHitBox() {
-        return headHitBox;
-    }
-
-    void setGrounded(bool grounded) {
-        isGrounded = grounded;
-    }
-
-    virtual void draw(const Vector2 offset) const override {
+    virtual void draw(Vector2 offset) const override {
         int facingDir = (currentDirection > 0) ? 1 : -1;
         DrawTextureRec(playerNum == 1 ? _player1_tilemap : _player2_tilemap, {currentSpriteIndex.x, currentSpriteIndex.y, 16.f * facingDir,16}, {std::round(rect.x - 2 + offset.x), std::round(rect.y + offset.y)}, WHITE);
         //DrawRectangleLinesEx(headHitBox, 1, BLUE);

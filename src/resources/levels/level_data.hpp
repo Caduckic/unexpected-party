@@ -29,32 +29,32 @@ LevelData _level1_data {
         { { 160, 96 }, { 80, 16} },
     },
     {
-        {{ 128, 128 }},
-        {{ 144, 128 }},
-        {{ 160, 128 }},
+        {{ 128, 128 }, CoinMode::DEFAULT},
+        {{ 144, 128 }, CoinMode::DEFAULT},
+        {{ 160, 128 }, CoinMode::DEFAULT},
 
-        {{ 16, 160 }},
-        {{ 32, 160 }},
-        {{ 48, 160 }},
-        {{ 16, 176 }},
-        {{ 32, 176 }},
-        {{ 48, 176 }},
+        {{ 16, 160 }, CoinMode::DEFAULT},
+        {{ 32, 160 }, CoinMode::DEFAULT},
+        {{ 48, 160 }, CoinMode::DEFAULT},
+        {{ 16, 176 }, CoinMode::DEFAULT},
+        {{ 32, 176 }, CoinMode::DEFAULT},
+        {{ 48, 176 }, CoinMode::DEFAULT},
 
-        {{ 160, 192 }},
-        {{ 176, 192 }},
-        {{ 192, 192 }},
-        {{ 208, 192 }},
-        {{ 224, 192 }},
-        {{ 160, 208 }},
-        {{ 176, 208 }},
-        {{ 192, 208 }},
-        {{ 208, 208 }},
-        {{ 224, 208 }},
-        {{ 160, 224 }},
-        {{ 176, 224 }},
-        {{ 192, 224 }},
-        {{ 208, 224 }},
-        {{ 224, 224 }}
+        {{ 160, 192 }, CoinMode::DEFAULT},
+        {{ 176, 192 }, CoinMode::DEFAULT},
+        {{ 192, 192 }, CoinMode::DEFAULT},
+        {{ 208, 192 }, CoinMode::DEFAULT},
+        {{ 224, 192 }, CoinMode::DEFAULT},
+        {{ 160, 208 }, CoinMode::DEFAULT},
+        {{ 176, 208 }, CoinMode::DEFAULT},
+        {{ 192, 208 }, CoinMode::DEFAULT},
+        {{ 208, 208 }, CoinMode::DEFAULT},
+        {{ 224, 208 }, CoinMode::DEFAULT},
+        {{ 160, 224 }, CoinMode::DEFAULT},
+        {{ 176, 224 }, CoinMode::DEFAULT},
+        {{ 192, 224 }, CoinMode::DEFAULT},
+        {{ 208, 224 }, CoinMode::DEFAULT},
+        {{ 224, 224 }, CoinMode::DEFAULT}
     }
 };
 
@@ -84,47 +84,47 @@ LevelData _level2_data {
         { { 128, 208 }, { 16, 32 } },
     },
     {
-        {{ 112, 32 }},
-        {{ 112, 48 }},
+        {{ 112, 32 }, CoinMode::DEFAULT},
+        {{ 112, 48 }, CoinMode::DEFAULT},
 
-        {{ 208, 96 }},
+        {{ 208, 96 }, CoinMode::DEFAULT},
 
-        {{ 16, 112 }},
-        {{ 32, 112 }},
-        {{ 48, 112 }},
-        {{ 16, 128 }},
-        {{ 32, 128 }},
-        {{ 48, 128 }},
-        {{ 16, 144 }},
-        {{ 32, 144 }},
-        {{ 48, 144 }},
+        {{ 16, 112 }, CoinMode::DEFAULT},
+        {{ 32, 112 }, CoinMode::DEFAULT},
+        {{ 48, 112 }, CoinMode::DEFAULT},
+        {{ 16, 128 }, CoinMode::DEFAULT},
+        {{ 32, 128 }, CoinMode::DEFAULT},
+        {{ 48, 128 }, CoinMode::DEFAULT},
+        {{ 16, 144 }, CoinMode::DEFAULT},
+        {{ 32, 144 }, CoinMode::DEFAULT},
+        {{ 48, 144 }, CoinMode::DEFAULT},
 
-        {{ 176, 128 }},
-        {{ 192, 128 }},
-        {{ 208, 128 }},
-        {{ 224, 128 }},
-        {{ 176, 144 }},
-        {{ 192, 144 }},
-        {{ 208, 144 }},
-        {{ 224, 144 }},
+        {{ 176, 128 }, CoinMode::DEFAULT},
+        {{ 192, 128 }, CoinMode::DEFAULT},
+        {{ 208, 128 }, CoinMode::DEFAULT},
+        {{ 224, 128 }, CoinMode::DEFAULT},
+        {{ 176, 144 }, CoinMode::DEFAULT},
+        {{ 192, 144 }, CoinMode::DEFAULT},
+        {{ 208, 144 }, CoinMode::DEFAULT},
+        {{ 224, 144 }, CoinMode::DEFAULT},
 
-        {{ 16, 176 }},
-        {{ 48, 176 }},
-        {{ 32, 192 }},
-        {{ 64, 192 }},
-        {{ 16, 208 }},
-        {{ 48, 208 }},
-        {{ 32, 224 }},
-        {{ 64, 224 }},
+        {{ 16, 176 }, CoinMode::DEFAULT},
+        {{ 48, 176 }, CoinMode::DEFAULT},
+        {{ 32, 192 }, CoinMode::DEFAULT},
+        {{ 64, 192 }, CoinMode::DEFAULT},
+        {{ 16, 208 }, CoinMode::DEFAULT},
+        {{ 48, 208 }, CoinMode::DEFAULT},
+        {{ 32, 224 }, CoinMode::DEFAULT},
+        {{ 64, 224 }, CoinMode::DEFAULT},
 
-        {{ 176, 176 }},
-        {{ 208, 176 }},
-        {{ 192, 192 }},
-        {{ 224, 192 }},
-        {{ 176, 208 }},
-        {{ 208, 208 }},
-        {{ 192, 224 }},
-        {{ 224, 224 }},
+        {{ 176, 176 }, CoinMode::DEFAULT},
+        {{ 208, 176 }, CoinMode::DEFAULT},
+        {{ 192, 192 }, CoinMode::DEFAULT},
+        {{ 224, 192 }, CoinMode::DEFAULT},
+        {{ 176, 208 }, CoinMode::DEFAULT},
+        {{ 208, 208 }, CoinMode::DEFAULT},
+        {{ 192, 224 }, CoinMode::DEFAULT},
+        {{ 224, 224 }, CoinMode::DEFAULT},
     }
 };
 
@@ -172,7 +172,7 @@ LevelData _level3_data = {
         //{ { 16, 128 }, { 16, 16} },
     },
     {
-        {{ 224, 224 }},//temp
+        {{ 224, 224 }, CoinMode::DEFAULT},//temp
     }
 };
 
@@ -193,7 +193,7 @@ LevelData _level4_data = {
         { { 16, 192 }, { 48, 48 } },
     },
     {
-        {{ 224, 224 }},//temp
+        {{ 224, 224 }, CoinMode::DEFAULT},//temp
     }
 };
 
