@@ -8,7 +8,6 @@
 #include "../entities/player.hpp"
 #include "../entities/block.hpp"
 #include "../entities/coin.hpp"
-#include "../entities/entity_object.hpp"
 #include "../texture_loader.hpp"
 #include "../resources/levels/level_data.hpp"
 #include "../ui_layouts.hpp"
@@ -17,7 +16,6 @@ class PlayState : public State {
 private:
     std::shared_ptr<Player> player1;
     std::shared_ptr<Player> player2;
-    EntityObject entity {{32,32}, {16,16}, 1};
     LevelType level;
     std::vector<Block> walls;
     std::vector<Coin> coins;
@@ -106,25 +104,20 @@ public:
         }
 
         if (!isPaused) {
-            pauseMenu.update();
-
             player1->input();
             player1->update();
 
             player2->input();
             player2->update();
-
-            entity.input();
-            entity.update();
             
             bool bounced1 {false};
             bool bounced2 {false};
             Rectangle headCol1 = player1->GetCollision(player2->GetHeadHitBox());
-            if (headCol1.x > 0 || (headCol1.y > 0 && !player2->IsTakingDamage())) {
+            if ((headCol1.x > 0 || (headCol1.y > 0 && !player2->IsTakingDamage())) && !player1->IsGrounded()) {
                 bounced1 = player1->CalcHeadBounce(headCol1, player2->GetVelocity());
             }
             Rectangle headCol2 = player2->GetCollision(player1->GetHeadHitBox());
-            if (headCol2.x > 0 || (headCol2.y > 0 && !player1->IsTakingDamage())) {
+            if ((headCol2.x > 0 || (headCol2.y > 0 && !player1->IsTakingDamage())) && !player2->IsGrounded()) {
                 bounced2 = player2->CalcHeadBounce(headCol2, player1->GetVelocity());
             }
 
@@ -153,12 +146,6 @@ public:
                         foundCol2 = true;
                         player2->CorrectCollision(wall.GetRect(), col2);
                     }
-                }
-
-                Rectangle col3 = entity.GetCollision(wall.GetRect());
-                if (col3.width > 0 || col3.height > 0) {
-                        foundCol2 = true;
-                        entity.CorrectCollision(wall.GetRect(), col3);
                 }
             }
 
@@ -190,6 +177,7 @@ public:
                     Rectangle col = player1->GetCollision(coin.GetRect());
                     if (col.width > 0 || col.height > 0) {
                         coin.SetCollected();
+                        if (coin.GetMode() == CoinMode::ENEMY) player1->TakeDamage();
                     }
                 }
 
@@ -197,6 +185,7 @@ public:
                     Rectangle col = player2->GetCollision(coin.GetRect());
                     if (col.width > 0 || col.height > 0) {
                         coin.SetCollected();
+                        if (coin.GetMode() == CoinMode::ENEMY) player2->TakeDamage();
                     }
                 }
             }
@@ -240,8 +229,6 @@ public:
             DrawTexture(_pause_canvas, position.x + 48, position.y + 48, WHITE);
             pauseMenu.draw(position);
         }
-
-        entity.draw(position);
     }
 };
 

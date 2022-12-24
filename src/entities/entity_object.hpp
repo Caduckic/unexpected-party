@@ -80,6 +80,10 @@ public:
         isGrounded = grounded;
     }
 
+    bool IsGrounded() {
+        return isGrounded;
+    }
+
     
     
     void CorrectCollision(const Rectangle& other, const Rectangle& col) {
