@@ -12,8 +12,11 @@
 #include "../resources/levels/level_data.hpp"
 #include "../ui_layouts.hpp"
 
+enum class LevelSpawn {UNKNOWN = -1, UP = 0, RIGHT, DOWN, LEFT};
+
 class PlayState : public State {
 private:
+    int roundsLeft;
     std::shared_ptr<Player> player1;
     std::shared_ptr<Player> player2;
     LevelType level;
@@ -22,8 +25,10 @@ private:
     std::vector<Coin> coins;
     UICanvas pauseMenu;
     bool isPaused;
+    LevelSpawn levelSpawn {UNKNOWN};
+    Vector2 nextLevelPos {0,0};
 public:
-    PlayState(Vector2 pos, LevelType level) : State(pos), player1{std::make_shared<Player>(Vector2{100,100}, Vector2{12,16}, 1)},
+    PlayState(Vector2 pos, LevelType level) : State(pos), roundsLeft{9}, player1{std::make_shared<Player>(Vector2{100,100}, Vector2{12,16}, 1)},
         player2{std::make_shared<Player>(Vector2{16,16}, Vector2{12,16}, -1)}, level{level}, nextLevel{UNKNOWN_LEVEL}, walls{}, coins{}, pauseMenu{{48,48}, {160, 160}, PAUSE_LAYOUT}, isPaused{false} {
         switch (level)
         {
@@ -124,18 +129,91 @@ public:
         }
     }
 
+    void SetRandomLevel() {
+        int randomLevel {GetRandomValue(1, 4)};
+
+        while (randomLevel == level) {
+            randomLevel = GetRandomValue(1, 4);
+        }
+
+        if (randomLevel == 1) nextLevel = LEVEL1;
+        else if (randomLevel == 2) nextLevel = LEVEL2;
+        else if (randomLevel == 3) nextLevel = LEVEL3;
+        else if (randomLevel == 4) nextLevel = LEVEL4;
+
+        int dir {GetRandomValue(0, 3)};
+        nextLevelPos = {0, -256};
+        switch (dir)
+        {
+        case 0:
+            nextLevelPos = {0, -256};
+            levelSpawn = LevelSpawn::UP;
+            break;
+        case 1:
+            nextLevelPos = {256, 0};
+            levelSpawn = LevelSpawn::RIGHT;
+            break;
+        case 2:
+            nextLevelPos = {0, 256};
+            levelSpawn = LevelSpawn::DOWN;
+            break;
+        case 3:
+            nextLevelPos = {-256, 0};
+            levelSpawn = LevelSpawn::LEFT;
+            break;
+        default:
+            break;
+        }
+    }
+
+    void SetLevel() {
+        position = {0,0};
+        LoadLevel(nextLevel);
+        nextLevel = UNKNOWN_LEVEL;
+    }
+
+    void TransitionLevel() {
+        //Vector2 nextStatePos = nextState->getPosition();
+
+        switch (levelSpawn)
+        {
+        case LevelSpawn::UP:
+            nextLevelPos.y += 180 * GetFrameTime();
+            position.y = nextLevelPos.y + 256;
+            if (nextLevelPos.y > 0) {
+                SetLevel();
+            }
+            break;
+        case LevelSpawn::RIGHT:
+            nextLevelPos.x -= 180 * GetFrameTime();
+            position.x = nextLevelPos.x - 256;
+            if (nextLevelPos.x < 0) {
+                SetLevel();
+            }
+            break;
+        case LevelSpawn::DOWN:
+            nextLevelPos.y -= 180 * GetFrameTime();
+            position.y = nextLevelPos.y - 256;
+            if (nextLevelPos.y < 0) {
+                SetLevel();
+            }
+            break;
+        case LevelSpawn::LEFT:
+            nextLevelPos.x += 180 * GetFrameTime();
+            position.x = nextLevelPos.x + 256;
+            if (nextLevelPos.x > 0) {
+                SetLevel();
+            }
+            break;
+        default:
+            SetLevel();
+            break;
+        }
+    }
+
     virtual void update() override {
         if (IsKeyPressed(KEY_K)) {
-            int randomLevel {GetRandomValue(1, 4)};
-
-            while (randomLevel == level) {
-                randomLevel = GetRandomValue(1, 4);
-            }
-
-            if (randomLevel == 1) nextLevel = LEVEL1;
-            else if (randomLevel == 2) nextLevel = LEVEL2;
-            else if (randomLevel == 3) nextLevel = LEVEL3;
-            else if (randomLevel == 4) nextLevel = LEVEL4;
+            SetRandomLevel();
         }
         if (nextLevel == UNKNOWN_LEVEL) {
             if (IsKeyPressed(KEY_P)) {
@@ -234,12 +312,7 @@ public:
             }
         }
         else {
-            position.x -= 180 * GetFrameTime();
-            if (position.x <= -256) {
-                position.x = 0;
-                LoadLevel(nextLevel);
-                nextLevel = UNKNOWN_LEVEL;
-            }
+            TransitionLevel();
         }
     }
 
@@ -266,16 +339,16 @@ public:
         switch (nextLevel)
         {
         case LEVEL1:
-            DrawTexture(_level1_data.texture, position.x + 256, position.y, WHITE);
+            DrawTexture(_level1_data.texture, nextLevelPos.x, nextLevelPos.y, WHITE);
             break;
         case LEVEL2:
-            DrawTexture(_level2_data.texture, position.x + 256, position.y, WHITE);
+            DrawTexture(_level2_data.texture, nextLevelPos.x, nextLevelPos.y, WHITE);
             break;
         case LEVEL3:
-            DrawTexture(_level3_data.texture, position.x + 256, position.y, WHITE);
+            DrawTexture(_level3_data.texture, nextLevelPos.x, nextLevelPos.y, WHITE);
             break;
         case LEVEL4:
-            DrawTexture(_level4_data.texture, position.x + 256, position.y, WHITE);
+            DrawTexture(_level4_data.texture, nextLevelPos.x, nextLevelPos.y, WHITE);
             break;
         default:
             //DrawTexture(_level1_data.texture, position.x + 256, position.y, WHITE);

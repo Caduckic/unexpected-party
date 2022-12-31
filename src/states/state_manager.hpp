@@ -6,12 +6,15 @@
 #include "play_state.hpp"
 #include <memory>
 
+enum class StateSpawn {UNKNOWN = -1, UP = 0, RIGHT, DOWN, LEFT};
+
 class StateManager {
 private:
     StateManager() : currentState{std::make_shared<TitleState>(Vector2{0,0})}, nextState{nullptr}, stateTransitioning{false}, isQuitGame{false} {};
     static StateManager instance;
     std::shared_ptr<State> currentState;
     std::shared_ptr<State> nextState;
+    StateSpawn nextStateSpawn {StateSpawn::UNKNOWN};
     bool stateTransitioning;
     bool isQuitGame;
 public:
@@ -36,21 +39,23 @@ public:
         {
         case 0:
             startPos = {0, -256};
+            nextStateSpawn = StateSpawn::UP;
             break;
         case 1:
             startPos = {256, 0};
+            nextStateSpawn = StateSpawn::RIGHT;
             break;
         case 2:
             startPos = {0, 256};
+            nextStateSpawn = StateSpawn::DOWN;
             break;
         case 3:
             startPos = {-256, 0};
+            nextStateSpawn = StateSpawn::LEFT;
             break;
         default:
             break;
         }
-
-        
 
         switch (state)
         {
@@ -81,43 +86,49 @@ public:
         stateTransitioning = true;
     }
 
+    void SwapState() {
+        currentState.swap(nextState);
+        nextState.reset();
+        currentState->setPosition({0,0});
+        stateTransitioning = false;
+    }
+
     void TransitionState() {
-        Vector2 nextStatePos = nextState->getPosition();
+        //Vector2 nextStatePos = nextState->getPosition();
 
-        if (nextStatePos.x != 0) {
-            if (nextStatePos.x > 1) {
-                nextState->setPosition({nextStatePos.x - 180 * GetFrameTime(), 0});
-                currentState->setPosition({(nextStatePos.x - 180 * GetFrameTime()) - 256, 0});
+        switch (nextStateSpawn)
+        {
+        case StateSpawn::UP:
+            nextState->setPosition({0, nextState->getPosition().y + 180 * GetFrameTime()});
+            currentState->setPosition({0, nextState->getPosition().y + 256});
+            if (nextState->getPosition().y > 0) {
+                SwapState();
             }
-            else if (nextStatePos.x < -1) {
-                nextState->setPosition({nextStatePos.x + 180 * GetFrameTime(), 0});
-                currentState->setPosition({(nextStatePos.x + 180 * GetFrameTime()) + 256, 0});
+            break;
+        case StateSpawn::RIGHT:
+            nextState->setPosition({nextState->getPosition().x - 180 * GetFrameTime(), 0});
+            currentState->setPosition({nextState->getPosition().x - 256, 0});
+            if (nextState->getPosition().x < 0) {
+                SwapState();
             }
-
-            if (nextStatePos.x < 1 && nextStatePos.x > -1) {
-                currentState.swap(nextState);
-                nextState.reset();
-                currentState->setPosition({0,0});
-                stateTransitioning = false;
+            break;
+        case StateSpawn::DOWN:
+            nextState->setPosition({0, nextState->getPosition().y - 180 * GetFrameTime()});
+            currentState->setPosition({0, nextState->getPosition().y - 256});
+            if (nextState->getPosition().y < 0) {
+                SwapState();
             }
-        }
-        else if (nextStatePos.y != 0) {
-            if (nextStatePos.y > 1) {
-                nextState->setPosition({ 0, nextStatePos.y - 180 * GetFrameTime()});
-                currentState->setPosition({ 0, ( nextStatePos.y - 180 * GetFrameTime()) - 256});
+            break;
+        case StateSpawn::LEFT:
+            nextState->setPosition({nextState->getPosition().x + 180 * GetFrameTime(), 0});
+            currentState->setPosition({nextState->getPosition().x + 256, 0});
+            if (nextState->getPosition().x > 0) {
+                SwapState();
             }
-            else if (nextStatePos.y < -1) {
-                nextState->setPosition({ 0, nextStatePos.y + 180 * GetFrameTime()});
-                currentState->setPosition({ 0, (nextStatePos.y + 180 * GetFrameTime()) + 256});
-            }
-
-            if (nextStatePos.y < 1 && nextStatePos.y > -1) {
-                currentState.swap(nextState);
-                //currentState = std::move(nextState);
-                nextState.reset();
-                currentState->setPosition({0,0});
-                stateTransitioning = false;
-            }
+            break;
+        default:
+            SwapState();
+            break;
         }
     }
 

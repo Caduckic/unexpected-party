@@ -47,7 +47,7 @@ public:
     }
 
     void GoDown() {
-        currentButtonID = currentButtonID + 1 < buttons.size() ? currentButtonID + 1 : 0;
+        currentButtonID = currentButtonID + 1 < (int)buttons.size() ? currentButtonID + 1 : 0;
     }
 
     void SetOffset(Vector2 newOffset) {
