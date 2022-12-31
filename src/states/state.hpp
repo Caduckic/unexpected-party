@@ -21,6 +21,10 @@ public:
         return -1;
     }
 
+    virtual int GetRoundsLeft() {
+        return 1;
+    }
+
     Vector2 getPosition() const {
         return position;
     }

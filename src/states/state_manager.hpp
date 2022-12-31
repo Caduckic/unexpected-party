@@ -137,6 +137,9 @@ public:
         else if (IsKeyPressed(KEY_T)) LoadNextState(TITLE);
         if (!stateTransitioning) {
             currentState->update();
+            if (currentState->GetRoundsLeft() < 1) {
+                LoadNextState(TITLE);
+            }
             for (const auto &button : currentState->GetCurrentCanvas().GetButtons()) {
                 
                 if (button.second.IsPressed()) {

@@ -2,15 +2,49 @@
 #define _GAME_OBJECT_HPP_
 
 #include "raylib.h"
+#include <vector>
+#include <iostream>
+#include <ctime>
+
+bool ContainsID(int id, std::vector<int> &IDs) {
+    bool contains {false};
+    for (auto &ID : IDs) {
+        if (ID == id) {
+            contains = true;
+            break;
+        }
+    }
+    return contains;
+}
+
+int GetRandomID() {
+    static std::vector<int> IDs {};
+    int newId = GetRandomValue(0, INT16_MAX);
+    while (ContainsID(newId, IDs)) {
+        newId = GetRandomValue(0, INT16_MAX);
+    }
+    IDs.push_back(newId);
+
+    return newId;
+}
 
 class GameObject {
 protected:
     Rectangle rect;
+    int id;
 public:
-    GameObject() : rect{0,0,0,0} {};
-    GameObject(Vector2 position) : rect{position.x, position.y, 0, 0} {};
-    GameObject(Vector2 position, Vector2 size) : rect{position.x, position.y, size.x, size.y} {};
+    GameObject() : rect{0,0,0,0}, id{GetRandomID()} {};
+    GameObject(Vector2 position) : rect{position.x, position.y, 0, 0}, id{GetRandomID()} {};
+    GameObject(Vector2 position, Vector2 size) : rect{position.x, position.y, size.x, size.y}, id{GetRandomID()} {};
     ~GameObject() = default;
+
+    bool operator==(const GameObject& rhs) {
+        return (id == rhs.id);
+    }
+
+    bool operator!=(const GameObject& rhs) {
+        return !(id == rhs.id);
+    }
 
     Rectangle GetCollision(const Rectangle& other) const {
         return GetCollisionRec(rect, other);

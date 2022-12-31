@@ -76,8 +76,16 @@ public:
         return vel;
     }
 
-    void SetGrounded(bool grounded) {
+    float GetCurrentDirection() const {
+        return currentDirection;
+    }
+
+    virtual void SetGrounded(bool grounded) {
         isGrounded = grounded;
+    }
+
+    virtual void SetDirection(float dir) {
+        direction = dir;
     }
 
     bool IsGrounded() {

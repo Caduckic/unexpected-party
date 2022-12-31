@@ -196,6 +196,10 @@ public:
         speed = -currentDirection * 100;
     }
 
+    void StopTakeDamage() {
+        if (isTakingDamage) isTakingDamage = false;
+    }
+
     virtual void update() override {
         if (!isTakingDamage) {
             CalculateInputMovement(600, 600, PLAYER_MAX_SPEED);

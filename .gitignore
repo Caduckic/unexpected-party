@@ -1,3 +1,6 @@
+# Linux Executable
+src/raylib_game
+
 # Prerequisites
 *.d
 

@@ -12,11 +12,25 @@
 #include "../resources/levels/level_data.hpp"
 #include "../ui_layouts.hpp"
 
+/*Rules
+1. Coins are enemies
+2. Gravity is reverse
+3. Coin is mario shell
+4. PvP can't stomp
+5. Collect most Coins
+6. Instant death
+7. Level is dark
+8. Players are invisible
+9. Death is win*/
+
 enum class LevelSpawn {UNKNOWN = -1, UP = 0, RIGHT, DOWN, LEFT};
+enum class GameRule {UNKNOWN = -1, ENEMY_COINS = 0, SHELL_COINS, LEVEL_UPSIDE_DOWN, NO_PVP, LOWEST_COINS, INSTANT_DEATH, INVISIBLE_PLAYERS, DIE_TO_WIN, LEVEL_DARK};
 
 class PlayState : public State {
 private:
     int roundsLeft;
+    int player1Wins {0};
+    int player2Wins {0};
     std::shared_ptr<Player> player1;
     std::shared_ptr<Player> player2;
     LevelType level;
@@ -27,6 +41,8 @@ private:
     bool isPaused;
     LevelSpawn levelSpawn {UNKNOWN};
     Vector2 nextLevelPos {0,0};
+    GameRule rule1;
+    GameRule rule2;
 public:
     PlayState(Vector2 pos, LevelType level) : State(pos), roundsLeft{9}, player1{std::make_shared<Player>(Vector2{100,100}, Vector2{12,16}, 1)},
         player2{std::make_shared<Player>(Vector2{16,16}, Vector2{12,16}, -1)}, level{level}, nextLevel{UNKNOWN_LEVEL}, walls{}, coins{}, pauseMenu{{48,48}, {160, 160}, PAUSE_LAYOUT}, isPaused{false} {
@@ -64,8 +80,16 @@ public:
             break;
         }
 
-        for (auto &coin : coins) {
-            coin.SetMode(CoinMode::ENEMY);
+        SetRandomRules();
+        if (rule1 == GameRule::ENEMY_COINS || rule2 == GameRule::ENEMY_COINS) {
+            for (auto &coin : coins) {
+                coin.SetMode(CoinMode::ENEMY);
+            }
+        }
+        else if (rule1 == GameRule::SHELL_COINS || rule2 == GameRule::SHELL_COINS) {
+            for (auto &coin : coins) {
+                coin.SetMode(CoinMode::SHELL);
+            }
         }
     };
     ~PlayState() = default;
@@ -74,12 +98,24 @@ public:
         return PLAY;
     }
 
+    void SetRandomRules() {
+        rule1 = (GameRule)GetRandomValue(0, 8);
+        rule2 = (GameRule)GetRandomValue(0, 8);
+        while (rule2 == rule1 || ((rule1 == GameRule::ENEMY_COINS || rule1 == GameRule::SHELL_COINS) && (rule2 == GameRule::ENEMY_COINS || rule2 == GameRule::SHELL_COINS))) {
+            rule2 = (GameRule)GetRandomValue(0, 8);
+        }
+    }
+
     virtual const UICanvas& GetCurrentCanvas() const override {
         return pauseMenu;
     }
 
     int GetLevelNum() {
         return level;
+    }
+
+    int GetRoundsLeft() {
+        return roundsLeft;
     }
 
     void UnloadLevel() {
@@ -127,9 +163,22 @@ public:
             level = LEVEL1;
             break;
         }
+
+        SetRandomRules();
+        if (rule1 == GameRule::ENEMY_COINS || rule2 == GameRule::ENEMY_COINS) {
+            for (auto &coin : coins) {
+                coin.SetMode(CoinMode::ENEMY);
+            }
+        }
+        else if (rule1 == GameRule::SHELL_COINS || rule2 == GameRule::SHELL_COINS) {
+            for (auto &coin : coins) {
+                coin.SetMode(CoinMode::SHELL);
+            }
+        }
     }
 
     void SetRandomLevel() {
+        roundsLeft -= 1;
         int randomLevel {GetRandomValue(1, 4)};
 
         while (randomLevel == level) {
@@ -173,8 +222,6 @@ public:
     }
 
     void TransitionLevel() {
-        //Vector2 nextStatePos = nextState->getPosition();
-
         switch (levelSpawn)
         {
         case LevelSpawn::UP:
@@ -276,13 +323,32 @@ public:
 
                 for (auto& coin : coins) {
                     coin.update();
-                    if (coin.GetMode() == CoinMode::ENEMY) {
+                    if (coin.GetMode() == CoinMode::ENEMY || coin.GetMode() == CoinMode::SHELL) {
                         bool foundCol {false};
                         for (auto& wall : walls) {
                             Rectangle col = coin.GetCollision(wall.GetRect());
                             if (col.width > 0 || col.height > 0) {
-                                foundCol1 = true;
+                                foundCol = true;
                                 coin.CorrectCollision(wall.GetRect(), col);
+                            }
+                        }
+                        if (!coin.IsCollected()){
+                            for (auto& otherCoin : coins) {
+                                if (otherCoin != coin && !otherCoin.IsCollected()) {
+                                    Rectangle col = coin.GetCollision(otherCoin.GetRect());
+                                    if (col.width > 0 || col.height > 0) {
+                                        foundCol = true;
+                                        coin.CorrectCollision(otherCoin.GetRect(), col);
+                                        if (coin.IsColX()) {
+                                            if (otherCoin.IsBounced()) {
+                                                otherCoin.Bounce(coin.GetCurrentDirection());
+                                            }
+                                            else {
+                                                otherCoin.Bounce(-coin.GetCurrentDirection());
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
 
@@ -293,16 +359,36 @@ public:
                     if (!coin.IsCollected()){
                         Rectangle col = player1->GetCollision(coin.GetRect());
                         if (col.width > 0 || col.height > 0) {
-                            coin.SetCollected();
-                            if (coin.GetMode() == CoinMode::ENEMY) player1->TakeDamage();
+                            if (coin.GetMode() != CoinMode::SHELL) coin.SetCollected();
+                            if (coin.GetMode() == CoinMode::ENEMY || coin.GetMode() == CoinMode::SHELL) {
+                                bool bounced = player1->CalcHeadBounce(col, {0,0});
+                                if (!bounced && coin.GetMode() == CoinMode::SHELL && !coin.IsBounced()) coin.SetCollected();
+                                else if (!bounced && (coin.GetMode() == CoinMode::ENEMY || (coin.GetMode() == CoinMode::SHELL && coin.IsBounced()))) player1->TakeDamage();
+                                else {
+                                    player1->StopTakeDamage();
+                                    if (coin.GetMode() == CoinMode::SHELL) {
+                                        coin.Bounce(player1->GetCurrentDirection());
+                                    }
+                                }
+                            }
                         }
                     }
 
                     if (!coin.IsCollected()){
                         Rectangle col = player2->GetCollision(coin.GetRect());
                         if (col.width > 0 || col.height > 0) {
-                            coin.SetCollected();
-                            if (coin.GetMode() == CoinMode::ENEMY) player2->TakeDamage();
+                            if (coin.GetMode() != CoinMode::SHELL) coin.SetCollected();
+                            if (coin.GetMode() == CoinMode::ENEMY || coin.GetMode() == CoinMode::SHELL) {
+                                bool bounced = player2->CalcHeadBounce(col, {0,0});
+                                if (!bounced && coin.GetMode() == CoinMode::SHELL && !coin.IsBounced()) coin.SetCollected();
+                                else if (!bounced && (coin.GetMode() == CoinMode::ENEMY || (coin.GetMode() == CoinMode::SHELL && coin.IsBounced()))) player2->TakeDamage();
+                                else {
+                                    player2->StopTakeDamage();
+                                    if (coin.GetMode() == CoinMode::SHELL) {
+                                        coin.Bounce(player2->GetCurrentDirection());
+                                    }
+                                }
+                            }
                         }
                     }
                 }

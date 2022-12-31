@@ -24,6 +24,10 @@ public:
     UIButton(Vector2 pos, Vector2 size, std::string text, UIAction action, bool IsSelected) : GameObject(pos, size), text{text}, action{action}, isSelected{isSelected}, isPressed{false}, offset{0,0} {};
     ~UIButton() = default;
 
+    void SetIsPressed(bool pressed) {
+        isPressed = pressed;
+    }
+
     bool IsPressed() const {
         return isPressed;
     }

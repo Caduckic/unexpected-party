@@ -13,6 +13,8 @@ private:
     bool collected;
     float spriteTimer;
     Vector2 currentSpriteIndex;
+    bool bounced;
+    bool colX;
 
     void spinCycle() {
         spriteTimer += GetFrameTime();
@@ -29,10 +31,11 @@ private:
     virtual void CorrectCollisionActionX() {
         direction = -direction;
         speed = -speed;
+        colX = true;
     }
 
 public:
-    Coin(Vector2 pos, CoinMode mode) : EntityObject(pos, {16,16}, -1), mode{mode}, collected{false}, spriteTimer{0}, currentSpriteIndex{0,0} {};
+    Coin(Vector2 pos, CoinMode mode) : EntityObject({pos.x + 2, pos.y}, {12,16}, -1), mode{mode}, collected{false}, spriteTimer{0}, currentSpriteIndex{0,0}, bounced{false}, colX{false} {};
     ~Coin() = default;
 
     void SetCollected() {
@@ -43,6 +46,19 @@ public:
         return collected;
     }
 
+    bool IsBounced() {
+        return bounced;
+    }
+
+    bool IsColX() {
+        return colX;
+    }
+
+    void Bounce(float dir) {
+        direction = dir;
+        bounced = !bounced;
+    }
+
     void SetMode(CoinMode newMode) {
         mode = newMode;
     }
@@ -51,17 +67,29 @@ public:
         return mode;
     }
 
+    void SetGrounded(bool grounded) override {
+        if (isGrounded && !grounded) speed = 0;
+        isGrounded = grounded;
+    }
+
     virtual void update() override {
+        colX = false;
         spinCycle();
         switch (mode)
         {
         case CoinMode::DEFAULT:
             break;
         case CoinMode::ENEMY:
-            CalculateInputMovement(600, 600, COIN_MAX_SPEED);
+            if (isGrounded) CalculateInputMovement(600, 600, COIN_MAX_SPEED);
+            else CalculateInputMovement(200, 200, COIN_MAX_SPEED * 0.75f);
             ApplyMovement();
             break;
         case CoinMode::SHELL:
+            if (bounced) {
+                speed = direction * SHELL_COIN_MAX_SPEED;
+                CalculateInputMovement(600, 600, SHELL_COIN_MAX_SPEED);
+                ApplyMovement();
+            }
             break;
         default:
             break;
@@ -69,7 +97,8 @@ public:
     }
 
     virtual void draw(Vector2 offset) const override {
-        if (!collected) DrawTextureRec(_coin_tilemap, {currentSpriteIndex.x,currentSpriteIndex.y, 16, 16}, {rect.x + offset.x, rect.y + offset.y}, WHITE);
+        if (!collected) DrawTextureRec(_coin_tilemap, {currentSpriteIndex.x,currentSpriteIndex.y, 16, 16}, {rect.x + offset.x - 2, rect.y + offset.y}, WHITE);
+        //if (mode == CoinMode::SHELL) DrawRectangleLinesEx(rect, 1, BLUE);
     }
 };
 
