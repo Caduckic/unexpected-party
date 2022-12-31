@@ -24,7 +24,7 @@ private:
     bool isPaused;
 public:
     PlayState(Vector2 pos, LevelType level) : State(pos), player1{std::make_shared<Player>(Vector2{100,100}, Vector2{12,16}, 1)},
-        player2{std::make_shared<Player>(Vector2{16,16}, Vector2{12,16}, -1)}, level{level}, nextLevel{UNKNOWN_LEVEL}, walls{}, coins{}, pauseMenu{{48,48}, {256, 256}, PAUSE_LAYOUT}, isPaused{false} {
+        player2{std::make_shared<Player>(Vector2{16,16}, Vector2{12,16}, -1)}, level{level}, nextLevel{UNKNOWN_LEVEL}, walls{}, coins{}, pauseMenu{{48,48}, {160, 160}, PAUSE_LAYOUT}, isPaused{false} {
         switch (level)
         {
         case LEVEL1:

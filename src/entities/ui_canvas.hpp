@@ -11,8 +11,19 @@ private:
     int currentButtonID;
     float selectionTimer;
     bool holdingNav;
+    Vector2 offset;
 public:
-    UICanvas(Vector2 pos, Vector2 size, std::map<int, UIButton> layout) : GameObject(pos, size), buttons{layout}, currentButtonID{0} {};
+    UICanvas(Vector2 pos, Vector2 size, std::map<int, UIButton> layout) : GameObject(pos, size), buttons{layout}, currentButtonID{0}, offset{0,0} {
+        for (auto &button : buttons) {
+            button.second.SetOffset({rect.x + offset.x, rect.y + offset.y});
+        }
+    };
+    UICanvas(Vector2 pos, Vector2 size, std::map<int, UIButton> layout, Vector2 initOffset) : UICanvas(pos, size, layout) {
+        offset = initOffset;
+        for (auto &button : buttons) {
+            button.second.SetOffset({rect.x + offset.x, rect.y + offset.y});
+        }
+    };
     ~UICanvas() = default;
 
     void NavigateButtons(int direction) {
@@ -37,6 +48,10 @@ public:
 
     void GoDown() {
         currentButtonID = currentButtonID + 1 < buttons.size() ? currentButtonID + 1 : 0;
+    }
+
+    void SetOffset(Vector2 newOffset) {
+        offset = newOffset;
     }
 
     void update() override {
@@ -82,9 +97,9 @@ public:
         return buttons;
     }
 
-    void draw(Vector2 offset) const override {
+    void draw(Vector2 drawOffset) const override {
         for (auto &button : buttons) {
-            button.second.draw({rect.x + offset.x, rect.y + offset.y});
+            button.second.draw({rect.x + drawOffset.x, rect.y + drawOffset.y});
         }
         //DrawRectangleLines(rect.x, rect.y, rect.height, rect.width, BLUE);
     }
