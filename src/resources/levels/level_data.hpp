@@ -13,6 +13,8 @@ struct LevelData
     Texture2D texture;
     std::vector<Block> walls;
     std::vector<Coin> coins;
+    Vector2 player1Pos;
+    Vector2 player2Pos;
 };
 
 LevelData _level1_data {
@@ -55,7 +57,8 @@ LevelData _level1_data {
         {{ 192, 224 }, CoinMode::DEFAULT},
         {{ 208, 224 }, CoinMode::DEFAULT},
         {{ 224, 224 }, CoinMode::DEFAULT}
-    }
+    },
+    {18, 48}, {226, 80} // Player Pos
 };
 
 LevelData _level2_data {
@@ -125,7 +128,8 @@ LevelData _level2_data {
         {{ 208, 208 }, CoinMode::DEFAULT},
         {{ 192, 224 }, CoinMode::DEFAULT},
         {{ 224, 224 }, CoinMode::DEFAULT},
-    }
+    },
+    {18, 144}, {226, 144} // Player Pos
 };
 
 LevelData _level3_data = {
@@ -173,7 +177,8 @@ LevelData _level3_data = {
     },
     {
         {{ 224, 224 }, CoinMode::DEFAULT},//temp
-    }
+    },
+    {18, 112}, {226, 32} // Player Pos
 };
 
 LevelData _level4_data = {
@@ -194,7 +199,8 @@ LevelData _level4_data = {
     },
     {
         {{ 224, 224 }, CoinMode::DEFAULT},//temp
-    }
+    },
+    {18, 48}, {226, 48} // Player Pos
 };
 
 void LoadLevelTextures() {

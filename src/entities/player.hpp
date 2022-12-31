@@ -227,9 +227,9 @@ public:
         int facingDir = (currentDirection > 0) ? 1 : -1;
         DrawTextureRec(playerNum == 1 ? _player1_tilemap : _player2_tilemap, {currentSpriteIndex.x, currentSpriteIndex.y, 16.f * facingDir,16}, {std::round(rect.x - 2 + offset.x), std::round(rect.y + offset.y)}, WHITE);
         //DrawRectangleLinesEx(rect, 1, BLUE);
-        if (playerNum == 2) {
-            //DrawText(std::to_string(vel.y).c_str(),0,0,30,BLUE);
-        }
+        /*if (playerNum == 2) {
+            DrawText(std::to_string(vel.y).c_str(),0,0,30,BLUE);
+        }*/
     }
 };
 
