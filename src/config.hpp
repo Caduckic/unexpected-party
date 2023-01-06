@@ -12,6 +12,7 @@ const float COIN_MAX_SPEED {40}, SHELL_COIN_MAX_SPEED {80};
 const int TARGET_FPS {240};
 
 const Color _COLOR3 {48,98,48,255};
+const Color _COLOR4 {15,56,15,255};
 
 Font ROMULUS_FONT;
 

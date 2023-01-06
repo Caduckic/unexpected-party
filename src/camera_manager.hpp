@@ -15,7 +15,11 @@ public:
     }
 
     void LoadCam() {
-        cam = {{0,0}, {0,0}, 0, GetScreenHeight() / 256.f};
+        cam = {{GetScreenHeight() / 2.f, GetScreenHeight() / 2.f}, {128,128}, 0, GetScreenHeight() / 256.f};
+    }
+
+    void RotateCam(float rot) {
+        cam.rotation = rot;
     }
 
     Camera2D& GetCam() {

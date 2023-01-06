@@ -19,6 +19,7 @@
 #include "resources/levels/level_data.hpp"
 #include "states/state_manager.hpp"
 #include "camera_manager.hpp"
+#include "mask_texture.hpp"
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -33,6 +34,9 @@ int main(void)
     InitWindow(768, 768, "Unexpected Party");
 
     CameraManager::Get().LoadCam();
+
+    MaskTexture::Get().LoadTexture();
+    MaskTexture::Get().ClearTexture();
 
     SetMousePosition(0,0);
 
@@ -85,6 +89,8 @@ int main(void)
     UnloadAllTextures();
 
     UnloadLevelTextures();
+
+    MaskTexture::Get().UnloadTexture();
 
     CloseAudioDevice();     // Close audio context
 

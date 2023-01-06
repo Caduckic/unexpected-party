@@ -11,6 +11,8 @@
 #include "../texture_loader.hpp"
 #include "../resources/levels/level_data.hpp"
 #include "../ui_layouts.hpp"
+#include "../camera_manager.hpp"
+#include "../mask_texture.hpp"
 
 /*Rules
 1. Coins are enemies
@@ -104,6 +106,10 @@ public:
         while (rule2 == rule1 || ((rule1 == GameRule::ENEMY_COINS || rule1 == GameRule::SHELL_COINS) && (rule2 == GameRule::ENEMY_COINS || rule2 == GameRule::SHELL_COINS))) {
             rule2 = (GameRule)GetRandomValue(0, 8);
         }
+
+        if (rule1 == GameRule::LEVEL_UPSIDE_DOWN || rule2 == GameRule::LEVEL_UPSIDE_DOWN) {
+            CameraManager::Get().RotateCam(180);
+        } else CameraManager::Get().RotateCam(0);
     }
 
     virtual const UICanvas& GetCurrentCanvas() const override {
@@ -178,6 +184,7 @@ public:
     }
 
     void SetRandomLevel() {
+        MaskTexture::Get().ClearTexture();
         roundsLeft -= 1;
         int randomLevel {GetRandomValue(1, 4)};
 
@@ -285,8 +292,10 @@ public:
                     bounced2 = player2->CalcHeadBounce(headCol2, player1->GetVelocity());
                 }
 
-                if (bounced1) player2->TakeDamage();
-                if (bounced2) player1->TakeDamage();
+                if (rule1 != GameRule::NO_PVP && rule2 != GameRule::NO_PVP) {
+                    if (bounced1) player2->TakeDamage();
+                    if (bounced2) player1->TakeDamage();
+                }
 
 
                 bool foundCol1 {false};
@@ -396,6 +405,13 @@ public:
             else {
                 pauseMenu.update();
             }
+
+            if (rule1 == GameRule::LEVEL_DARK || rule2 == GameRule::LEVEL_DARK){
+                Vector2 player1Mask {player1->GetRect().x + (player1->GetRect().width / 2), player1->GetRect().y + (player1->GetRect().height / 2)};
+                Vector2 player2Mask {player2->GetRect().x + (player2->GetRect().width / 2), player2->GetRect().y + (player2->GetRect().height / 2)};
+
+                MaskTexture::Get().MaskAroundPlayers(player1Mask, player2Mask);
+            }
         }
         else {
             TransitionLevel();
@@ -449,6 +465,8 @@ public:
         }
         player1->draw(position);
         player2->draw(position);
+
+        MaskTexture::Get().DrawTexture();
 
         //DrawTextEx(ROMULUS_FONT, "test TEST", {0,0},40, 2, BLUE);
         if (isPaused) {
