@@ -29,7 +29,7 @@ public:
         return position;
     }
 
-    void setPosition(const Vector2 pos) {
+    virtual void setPosition(const Vector2 pos) {
         position = pos;
     }
 

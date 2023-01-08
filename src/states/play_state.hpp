@@ -101,16 +101,22 @@ public:
         return PLAY;
     }
 
+    virtual void setPosition(const Vector2 pos) {
+        position = pos;
+        if (pos.x == 0 && pos.y == 0) {
+            if (rule1 == GameRule::LEVEL_UPSIDE_DOWN || rule2 == GameRule::LEVEL_UPSIDE_DOWN) {
+                CameraManager::Get().RotateCam(180);
+            }
+            else CameraManager::Get().RotateCam(0);
+        }
+    }
+
     void SetRandomRules() {
         rule1 = (GameRule)GetRandomValue(0, 8);
         rule2 = (GameRule)GetRandomValue(0, 8);
         while (rule2 == rule1 || ((rule1 == GameRule::ENEMY_COINS || rule1 == GameRule::SHELL_COINS) && (rule2 == GameRule::ENEMY_COINS || rule2 == GameRule::SHELL_COINS))) {
             rule2 = (GameRule)GetRandomValue(0, 8);
         }
-
-        if (rule1 == GameRule::LEVEL_UPSIDE_DOWN || rule2 == GameRule::LEVEL_UPSIDE_DOWN) {
-            CameraManager::Get().RotateCam(180);
-        } else CameraManager::Get().RotateCam(0);
     }
 
     virtual const UICanvas& GetCurrentCanvas() const override {
@@ -132,6 +138,7 @@ public:
 
     void LoadLevel(int loadLevel) {
         UnloadLevel();
+        CameraManager::Get().RotateCam(0);
         player1->Reset();
         player2->Reset();
         switch (loadLevel)
@@ -187,6 +194,7 @@ public:
     }
 
     void SetRandomLevel() {
+        CameraManager::Get().RotateCam(0);
         MaskTexture::Get().ClearTexture();
         roundsLeft -= 1;
         int randomLevel {GetRandomValue(1, 4)};
@@ -229,6 +237,10 @@ public:
         position = {0,0};
         LoadLevel(nextLevel);
         nextLevel = UNKNOWN_LEVEL;
+
+        if (rule1 == GameRule::LEVEL_UPSIDE_DOWN || rule2 == GameRule::LEVEL_UPSIDE_DOWN) {
+            CameraManager::Get().RotateCam(180);
+        } else CameraManager::Get().RotateCam(0);
     }
 
     void TransitionLevel() {
