@@ -127,6 +127,13 @@ public:
         return false;
     }
 
+    void Reset() {
+        vel = {0,0};
+        isTakingDamage = false;
+        if (playerNum == 1) currentDirection = 1;
+        else if (playerNum == 2) currentDirection = -1;
+    }
+
     virtual void input() override {
         float newDir {direction};
         float oldDir {direction};

@@ -20,12 +20,15 @@
 #include "states/state_manager.hpp"
 #include "camera_manager.hpp"
 #include "mask_texture.hpp"
+#include "raylib_logo.hpp"
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
 #endif
 
 void UpdateDrawFrame();
+
+RaylibLogo logo {};
 
 int main(void)
 {
@@ -38,7 +41,8 @@ int main(void)
     MaskTexture::Get().LoadTexture();
     MaskTexture::Get().ClearTexture();
 
-    SetMousePosition(0,0);
+    SetMousePosition(GetScreenWidth()/2, GetScreenHeight()/3);
+    HideCursor();
 
     LoadGameFont();
 
@@ -101,16 +105,32 @@ int main(void)
 }
 
 void UpdateDrawFrame() {
-    StateManager::Get().update();
+    if (IsCursorHidden() && GetMousePosition().x != GetScreenWidth()/2 && GetMousePosition().y != GetScreenHeight()/3) {
+        ShowCursor();
+    }
+    if (!logo.IsFinished()) {
+        logo.update();
+        BeginDrawing();
+        BeginMode2D(CameraManager::Get().GetCam());
+            ClearBackground(_COLOR1);
 
+            logo.render();
+        EndMode2D();
+        EndDrawing();
+    }
+    else {
+        StateManager::Get().update();
 
-    BeginDrawing();
-    BeginMode2D(CameraManager::Get().GetCam());
-        ClearBackground(RAYWHITE);
+        BeginDrawing();
+        BeginMode2D(CameraManager::Get().GetCam());
+            ClearBackground(RAYWHITE);
 
-        StateManager::Get().render();
-    EndMode2D();
-    EndDrawing();
+            StateManager::Get().render();
+        EndMode2D();
+        EndDrawing();
+    }
+
+    
 }
 
 /*#include "screens.h"    // NOTE: Declares global (extern) variables and screens functions

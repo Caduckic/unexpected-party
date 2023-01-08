@@ -33,6 +33,8 @@ public:
     }
 
     void LoadNextState(GameState state) {
+        CameraManager::Get().RotateCam(0);
+        MaskTexture::Get().ClearTexture();
         int dir {GetRandomValue(0, 3)};
         Vector2 startPos {0, -256};
         switch (dir)

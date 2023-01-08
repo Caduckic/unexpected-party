@@ -48,6 +48,7 @@ private:
 public:
     PlayState(Vector2 pos, LevelType level) : State(pos), roundsLeft{9}, player1{std::make_shared<Player>(Vector2{100,100}, Vector2{12,16}, 1)},
         player2{std::make_shared<Player>(Vector2{16,16}, Vector2{12,16}, -1)}, level{level}, nextLevel{UNKNOWN_LEVEL}, walls{}, coins{}, pauseMenu{{48,48}, {160, 160}, PAUSE_LAYOUT}, isPaused{false} {
+        MaskTexture::Get().ClearTexture();
         switch (level)
         {
         case LEVEL1:
@@ -131,6 +132,8 @@ public:
 
     void LoadLevel(int loadLevel) {
         UnloadLevel();
+        player1->Reset();
+        player2->Reset();
         switch (loadLevel)
         {
         case 1:
@@ -276,9 +279,15 @@ public:
 
             if (!isPaused) {
                 player1->input();
+                if (rule1 == GameRule::LEVEL_UPSIDE_DOWN || rule2 == GameRule::LEVEL_UPSIDE_DOWN) {
+                    player1->SetDirection(-player1->GetDirection());
+                }
                 player1->update();
 
                 player2->input();
+                if (rule1 == GameRule::LEVEL_UPSIDE_DOWN || rule2 == GameRule::LEVEL_UPSIDE_DOWN) {
+                    player2->SetDirection(-player2->GetDirection());
+                }
                 player2->update();
                 
                 bool bounced1 {false};

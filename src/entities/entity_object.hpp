@@ -80,12 +80,22 @@ public:
         return currentDirection;
     }
 
+    float GetDirection() const {
+        return direction;
+    }
+
     virtual void SetGrounded(bool grounded) {
         isGrounded = grounded;
     }
 
+    virtual void SetCurrentDirection(float dir) {
+        currentDirection = dir;
+    }
+
     virtual void SetDirection(float dir) {
         direction = dir;
+        if (dir > 0 && currentDirection != 1) currentDirection = 1;
+        else if (dir < 0 && currentDirection != -1) currentDirection = -1;
     }
 
     bool IsGrounded() {
