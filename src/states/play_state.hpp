@@ -290,27 +290,35 @@ public:
             }
 
             if (!isPaused) {
-                player1->input();
-                if (rule1 == GameRule::LEVEL_UPSIDE_DOWN || rule2 == GameRule::LEVEL_UPSIDE_DOWN) {
-                    player1->SetDirection(-player1->GetDirection());
+                if (!player1->IsDead()) {
+                    player1->input();
+                    if (rule1 == GameRule::LEVEL_UPSIDE_DOWN || rule2 == GameRule::LEVEL_UPSIDE_DOWN) {
+                        player1->SetDirection(-player1->GetDirection());
+                    }
+                    player1->update();
                 }
-                player1->update();
-
-                player2->input();
-                if (rule1 == GameRule::LEVEL_UPSIDE_DOWN || rule2 == GameRule::LEVEL_UPSIDE_DOWN) {
-                    player2->SetDirection(-player2->GetDirection());
+                if (!player2->IsDead()) {
+                    player2->input();
+                    if (rule1 == GameRule::LEVEL_UPSIDE_DOWN || rule2 == GameRule::LEVEL_UPSIDE_DOWN) {
+                        player2->SetDirection(-player2->GetDirection());
+                    }
+                    player2->update();
                 }
-                player2->update();
                 
                 bool bounced1 {false};
                 bool bounced2 {false};
-                Rectangle headCol1 = player1->GetCollision(player2->GetHeadHitBox());
-                if ((headCol1.x > 0 || (headCol1.y > 0 && !player2->IsTakingDamage())) && !player1->IsGrounded()) {
-                    bounced1 = player1->CalcHeadBounce(headCol1, player2->GetVelocity());
+                if (!player2->IsDead()) {
+                    Rectangle headCol1 = player1->GetCollision(player2->GetHeadHitBox());
+                    if ((headCol1.x > 0 || (headCol1.y > 0 && !player2->IsTakingDamage())) && !player1->IsGrounded()) {
+                        bounced1 = player1->CalcHeadBounce(headCol1, player2->GetVelocity());
+                    }
                 }
-                Rectangle headCol2 = player2->GetCollision(player1->GetHeadHitBox());
-                if ((headCol2.x > 0 || (headCol2.y > 0 && !player1->IsTakingDamage())) && !player2->IsGrounded()) {
-                    bounced2 = player2->CalcHeadBounce(headCol2, player1->GetVelocity());
+
+                if (!player1->IsDead()) {
+                    Rectangle headCol2 = player2->GetCollision(player1->GetHeadHitBox());
+                    if ((headCol2.x > 0 || (headCol2.y > 0 && !player1->IsTakingDamage())) && !player2->IsGrounded()) {
+                        bounced2 = player2->CalcHeadBounce(headCol2, player1->GetVelocity());
+                    }
                 }
 
                 if (rule1 != GameRule::NO_PVP && rule2 != GameRule::NO_PVP) {
@@ -430,8 +438,11 @@ public:
             if (rule1 == GameRule::LEVEL_DARK || rule2 == GameRule::LEVEL_DARK){
                 Vector2 player1Mask {player1->GetRect().x + (player1->GetRect().width / 2), player1->GetRect().y + (player1->GetRect().height / 2)};
                 Vector2 player2Mask {player2->GetRect().x + (player2->GetRect().width / 2), player2->GetRect().y + (player2->GetRect().height / 2)};
-
-                MaskTexture::Get().MaskAroundPlayers(player1Mask, player2Mask);
+                
+                if (player1->IsDead() && player2->IsDead()) MaskTexture::Get().FillTexture();
+                else if (player1->IsDead() && !player2->IsDead()) MaskTexture::Get().MaskAroundPlayer(player2Mask);
+                else if (player2->IsDead() && !player1->IsDead()) MaskTexture::Get().MaskAroundPlayer(player1Mask);
+                else MaskTexture::Get().MaskAroundPlayers(player1Mask, player2Mask);
             }
         }
         else {

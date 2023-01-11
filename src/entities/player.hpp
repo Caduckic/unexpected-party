@@ -14,6 +14,9 @@ private:
     float spriteTimer;
     bool bothPressed;
     bool isTakingDamage;
+    bool isDying;
+    bool isDead;
+    int deathFlashes;
     float damageDir;
 
     void walkCycle() {
@@ -68,8 +71,14 @@ private:
         headHitBox.y = rect.y;
         spriteTimer += GetFrameTime();
         if (spriteTimer > -1.8 && spriteTimer < 0) {
+            deathFlashes++;
             spriteTimer = -2;
             currentSpriteIndex.x = currentSpriteIndex.x == 32 ? 48 : 32;
+
+            if (deathFlashes >= 8) {
+                deathFlashes = 0;
+                isDead = true;
+            }
         }
         else if (spriteTimer > 0 && spriteTimer < 0.4) currentSpriteIndex = {48, 16};
         else if (spriteTimer > 0.4 && spriteTimer < 1) currentSpriteIndex = {32, 32};
@@ -102,10 +111,10 @@ private:
     }
 
     virtual void CorrectionCollisionGrounded() {
-        isTakingDamage = false;
+        StopTakeDamage();
     }
 public:
-    Player(Vector2 pos, Vector2 size, float dir) : EntityObject(pos, size, dir), headHitBox{pos.x,pos.y, size.x, 4}, playerNum{dir > 0 ? 1 : 2}, acceleration{PLAYER_ACCELERATION}, isJump{false}, doneLanding{true}, spriteTimer{0}, bothPressed{false}, isTakingDamage{false}, damageDir{0} {};
+    Player(Vector2 pos, Vector2 size, float dir) : EntityObject(pos, size, dir), headHitBox{pos.x,pos.y, size.x, 4}, playerNum{dir > 0 ? 1 : 2}, acceleration{PLAYER_ACCELERATION}, isJump{false}, doneLanding{true}, spriteTimer{0}, bothPressed{false}, isTakingDamage{false}, isDying{false}, isDead{false}, deathFlashes{0}, damageDir{0} {};
     ~Player() = default;
 
     void CalculateDamageMovement() {
@@ -128,10 +137,16 @@ public:
     }
 
     void Reset() {
+        isDying = false;
+        isDead = false;
         vel = {0,0};
         isTakingDamage = false;
         if (playerNum == 1) currentDirection = 1;
         else if (playerNum == 2) currentDirection = -1;
+    }
+
+    bool IsDead() {
+        return isDead;
     }
 
     virtual void input() override {
@@ -159,7 +174,7 @@ public:
         }
 
         direction = 0;
-        if (!isTakingDamage) {
+        if (!isTakingDamage && !isDying) {
             if (IsKeyDown(LEFT)) {
                 direction += -1;
                 if (oldDir + direction == 0 && !bothPressed) {
@@ -204,7 +219,10 @@ public:
     }
 
     void StopTakeDamage() {
-        if (isTakingDamage) isTakingDamage = false;
+        if (isTakingDamage) {
+            isTakingDamage = false;
+            isDying = true;
+        }
     }
 
     virtual void update() override {
@@ -223,20 +241,21 @@ public:
         ApplyMovement();
         headHitBox.x = rect.x;
 
-        if (isTakingDamage) takeDamageCycle(); 
+        if (isDead) {}
+        else if (isDying) deathAnimation();
+        else if (isTakingDamage) takeDamageCycle(); 
         else if (vel.y < 0) jumpFrame();
         else if (!isGrounded) fallFrame();
         else if (!doneLanding) landFrame();
         else if (isWalking) walkCycle();
         else if (!isWalking) idleCycle();
-        //deathAnimation();
 
         isWalking = false;
     }
 
     virtual void draw(Vector2 offset) const override {
         int facingDir = (currentDirection > 0) ? 1 : -1;
-        DrawTextureRec(playerNum == 1 ? _player1_tilemap : _player2_tilemap, {currentSpriteIndex.x, currentSpriteIndex.y, 16.f * facingDir,16}, {std::round(rect.x - 2 + offset.x), std::round(rect.y + offset.y)}, WHITE);
+        if (!isDead) DrawTextureRec(playerNum == 1 ? _player1_tilemap : _player2_tilemap, {currentSpriteIndex.x, currentSpriteIndex.y, 16.f * facingDir,16}, {std::round(rect.x - 2 + offset.x), std::round(rect.y + offset.y)}, WHITE);
         //DrawRectangleLinesEx(rect, 1, BLUE);
         /*if (playerNum == 2) {
             DrawText(std::to_string(vel.y).c_str(),0,0,30,BLUE);

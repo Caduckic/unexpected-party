@@ -54,6 +54,31 @@ public:
         EndTextureMode();
     }
 
+    void MaskAroundPlayer(Vector2 point) {
+        BeginTextureMode(texture);
+
+        // clears render texture
+        ClearBackground({0,0,0,0});
+
+        // checks every pixel and draws black if it doesn't collide with mouse position with cutOutRadius
+        for (int i {0}; i < 256; i++) {
+            for (int j {0}; j < 256; j++) {
+                if (!CheckCollisionPointCircle({(float)j, (float)i}, ConvertToScreen(point), 32)) {
+                    DrawPixel(j, i, _COLOR4);
+                }
+            }
+        }
+        EndTextureMode();
+    }
+
+    void FillTexture() {
+        BeginTextureMode(texture);
+
+        ClearBackground(_COLOR4);
+
+        EndTextureMode();
+    }
+
     void DrawTexture() {
         DrawTextureRec(texture.texture, { 0, 0, (float)texture.texture.width, (float)-texture.texture.height }, { 0, 0 }, WHITE);
         //DrawTexturePro(texture.texture, { 0, 0, (float)texture.texture.width, (float)-texture.texture.height }, {0,0,(float)GetScreenWidth(),(float)GetScreenHeight()}, { 0, 0 }, 0, WHITE);
